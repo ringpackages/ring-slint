@@ -1,0 +1,253 @@
+export component App inherits Window {
+    title: "Hello Ring + Slint";
+    width: 400px;
+    height: 480px;
+    background: #0a0a0f;
+
+    // Layout constants
+    property <length> content-padding: 40px;
+    property <length> button-width: 200px;
+    property <length> button-height: 52px;
+    property <length> button-margin: 20px;
+    property <length> logo-outer-size: 88px;
+    property <length> logo-inner-size: 72px;
+    property <length> logo-border-width: 1px;
+    property <length> message-box-height: 64px;
+    property <length> ambient-glow-size: 280px;
+    property <length> ambient-glow-small: 220px;
+
+    callback greet();
+    in-out property <string> message: "Click the button!";
+
+    // Animation state
+    property <bool> loaded: false;
+
+    init => {
+        loaded = true;
+    }
+
+    // Deep background with subtle texture effect
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: @linear-gradient(180deg, #0f0f14 0%, #0a0a0f 40%, #08080c 100%);
+    }
+
+    // Ambient glow - top left (warm)
+    Rectangle {
+        x: -ambient-glow-size * 0.36;
+        y: -ambient-glow-size * 0.29;
+        width: ambient-glow-size;
+        height: ambient-glow-size;
+        border-radius: ambient-glow-size / 2;
+        background: @radial-gradient(circle, #d4a57414 0%, transparent 70%);
+        opacity: loaded ? 0.6 : 0;
+        animate opacity { duration: 1200ms; easing: ease-out; }
+    }
+
+    // Ambient glow - bottom right (cool)
+    Rectangle {
+        x: parent.width - ambient-glow-small / 2;
+        y: parent.height - ambient-glow-small / 2;
+        width: ambient-glow-small;
+        height: ambient-glow-small;
+        border-radius: ambient-glow-small / 2;
+        background: @radial-gradient(circle, #5a8a9a0f 0%, transparent 70%);
+        opacity: loaded ? 0.5 : 0;
+        animate opacity { duration: 1400ms; delay: 200ms; easing: ease-out; }
+    }
+
+    // Geometric accent line - vertical (top right area)
+    Rectangle {
+        x: parent.width - content-padding * 2;
+        y: content-padding;
+        width: 1px;
+        height: loaded ? 120px : 0px;
+        background: @linear-gradient(180deg, #d4a57466 0%, transparent 100%);
+        animate height { duration: 800ms; delay: 400ms; easing: ease-out; }
+    }
+
+    // Geometric accent line - horizontal (bottom left area)
+    Rectangle {
+        x: content-padding * 0.75;
+        y: parent.height - button-height - button-margin - 28px;
+        width: loaded ? 60px : 0px;
+        height: 1px;
+        background: @linear-gradient(90deg, #5a8a9a4d 0%, transparent 100%);
+        animate width { duration: 600ms; delay: 600ms; easing: ease-out; }
+    }
+
+    // Floating action button - centered horizontally
+    Rectangle {
+        x: (parent.width - button-width) / 2;
+        y: parent.height - button-height - button-margin;
+        width: button-width;
+        height: button-height;
+        border-radius: button-height / 2;
+        background: btn-touch.pressed
+            ? #b8956a
+            : btn-touch.has-hover
+                ? @linear-gradient(90deg, #d4a574 0%, #c49464 100%)
+                : @linear-gradient(90deg, #c49464 0%, #b8956a 100%);
+        drop-shadow-blur: btn-touch.has-hover ? 28px : 18px;
+        drop-shadow-color: btn-touch.has-hover ? #d4a57466 : #d4a57440;
+        drop-shadow-offset-y: btn-touch.has-hover ? 6px : 3px;
+        opacity: loaded ? 1 : 0;
+
+        animate background { duration: 250ms; easing: ease-out; }
+        animate drop-shadow-blur { duration: 300ms; easing: ease-out; }
+        animate drop-shadow-color { duration: 300ms; easing: ease-out; }
+        animate drop-shadow-offset-y { duration: 300ms; easing: ease-out; }
+        animate opacity { duration: 600ms; delay: 500ms; easing: ease-out; }
+
+        btn-touch := TouchArea {
+            clicked => { greet(); }
+        }
+
+        HorizontalLayout {
+            alignment: center;
+            spacing: 10px;
+
+            Text {
+                text: "Say Hello";
+                color: #0a0a0f;
+                font-size: 15px;
+                font-weight: 600;
+                vertical-alignment: center;
+                letter-spacing: 1px;
+            }
+
+            Text {
+                text: "→";
+                font-size: 16px;
+                color: #0a0a0fcc;
+                vertical-alignment: center;
+            }
+        }
+    }
+
+    // Main content
+    VerticalLayout {
+        alignment: center;
+        spacing: 0px;
+        padding-left: content-padding;
+        padding-right: content-padding;
+        padding-top: content-padding + 10px;
+        padding-bottom: button-height + button-margin * 2 + 10px;
+
+        // Logo container with ring effect
+        Rectangle {
+            width: logo-outer-size;
+            height: logo-outer-size;
+
+            // Outer ring - centered in parent
+            Rectangle {
+                x: (parent.width - logo-outer-size) / 2;
+                y: (parent.height - logo-outer-size) / 2;
+                width: logo-outer-size;
+                height: logo-outer-size;
+                border-radius: logo-outer-size / 2;
+                border-width: logo-border-width;
+                border-color: #d4a57440;
+                background: transparent;
+                opacity: loaded ? 1 : 0;
+                animate opacity { duration: 600ms; delay: 100ms; easing: ease-out; }
+            }
+
+            // Inner glow circle - centered with calculated offset
+            Rectangle {
+                x: (parent.width - logo-inner-size) / 2;
+                y: (parent.height - logo-inner-size) / 2;
+                width: logo-inner-size;
+                height: logo-inner-size;
+                border-radius: logo-inner-size / 2;
+                background: @linear-gradient(135deg, #1a1815 0%, #12100e 100%);
+                border-width: logo-border-width;
+                border-color: #d4a57426;
+                drop-shadow-blur: 30px;
+                drop-shadow-color: #d4a57426;
+                opacity: loaded ? 1 : 0;
+                animate opacity { duration: 500ms; easing: ease-out; }
+
+                // Ring symbol - centered via text alignment
+                Text {
+                    text: "◇";
+                    font-size: 28px;
+                    color: #d4a574;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    opacity: loaded ? 1 : 0;
+                    animate opacity { duration: 400ms; delay: 300ms; easing: ease-out; }
+                }
+            }
+        }
+
+        // Spacer
+        Rectangle { height: 32px; }
+
+        // Brand text
+        Text {
+            text: "RING + SLINT";
+            font-size: 11px;
+            font-weight: 600;
+            color: #d4a574b3;
+            horizontal-alignment: center;
+            letter-spacing: 4px;
+            opacity: loaded ? 1 : 0;
+            animate opacity { duration: 500ms; delay: 200ms; easing: ease-out; }
+        }
+
+        // Spacer
+        Rectangle { height: 16px; }
+
+        // Welcome heading
+        Text {
+            text: "Welcome";
+            font-size: 32px;
+            font-weight: 300;
+            color: #f5f5f5;
+            horizontal-alignment: center;
+            letter-spacing: 1px;
+            opacity: loaded ? 1 : 0;
+            animate opacity { duration: 600ms; delay: 300ms; easing: ease-out; }
+        }
+
+        // Spacer
+        Rectangle { height: 24px; }
+
+        // Message display with container
+        Rectangle {
+            width: 100%;
+            height: message-box-height;
+            border-radius: 8px;
+            background: #ffffff08;
+            border-width: 1px;
+            border-color: #ffffff0d;
+            opacity: loaded ? 1 : 0;
+            animate opacity { duration: 500ms; delay: 400ms; easing: ease-out; }
+
+            Text {
+                text: message;
+                font-size: 18px;
+                font-weight: 500;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                color: #e8e8e8;
+                letter-spacing: 0.5px;
+            }
+        }
+
+        // Spacer (balances layout above button area)
+        Rectangle { height: 60px; }
+
+        // Footer accent - centered via horizontal-alignment in VerticalLayout
+        Rectangle {
+            width: 40px;
+            height: 2px;
+            border-radius: 1px;
+            background: @linear-gradient(90deg, transparent 0%, #5a8a9a4d 50%, transparent 100%);
+            opacity: loaded ? 1 : 0;
+            animate opacity { duration: 800ms; delay: 700ms; easing: ease-out; }
+        }
+    }
+}

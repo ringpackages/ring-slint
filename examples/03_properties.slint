@@ -1,0 +1,306 @@
+// Modern Design System - Properties Example
+// Theme: Dark with purple accent
+
+export component App inherits Window {
+    title: "Properties Example";
+    width: 400px;
+    height: 500px;
+    background: #07070a;
+
+    // === API: Keep all callbacks and properties ===
+    callback show-info();
+    callback toggle-active();
+
+    in-out property <string> user-name: "Guest";
+    in-out property <int> user-age: 0;
+    in-out property <bool> is-active: false;
+
+    // === Design System Tokens ===
+    property <color> surface: #0f1014;
+    property <color> surface-elevated: #16171c;
+    property <color> border-subtle: #ffffff10;
+    property <color> border-focus: #ffffff20;
+    property <color> text-primary: #f8fafc;
+    property <color> text-secondary: #94a3b8;
+    property <color> text-muted: #64748b;
+    property <color> accent-primary: #8b5cf6;
+    property <color> accent-secondary: #6366f1;
+    property <color> success: #22c55e;
+    property <color> error: #ef4444;
+
+    // Background with subtle gradient
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: @linear-gradient(180deg, #0f1014 0%, #07070a 100%);
+    }
+
+    // Centered content container
+    Rectangle {
+        width: 100%;
+        height: 100%;
+
+        VerticalLayout {
+            alignment: start;
+            padding: 32px;
+            spacing: 24px;
+
+            // Header
+            VerticalLayout {
+                spacing: 8px;
+
+                Text {
+                    text: "User Profile";
+                    font-size: 28px;
+                    font-weight: 700;
+                    color: text-primary;
+                }
+
+                Text {
+                    text: "Property binding demonstration";
+                    font-size: 14px;
+                    color: text-muted;
+                }
+            }
+
+            // Profile Card
+            Rectangle {
+                background: surface-elevated;
+                border-radius: 16px;
+                border-width: 1px;
+                border-color: border-subtle;
+                drop-shadow-blur: 24px;
+                drop-shadow-color: #00000030;
+
+                VerticalLayout {
+                    padding: 24px;
+                    spacing: 20px;
+
+                    // Avatar + Name row
+                    HorizontalLayout {
+                        spacing: 16px;
+                        alignment: start;
+
+                        // Avatar with gradient
+                        Rectangle {
+                            width: 64px;
+                            height: 64px;
+                            border-radius: 32px;
+                            background: @linear-gradient(135deg, #8b5cf6, #6366f1);
+                            drop-shadow-blur: 12px;
+                            drop-shadow-color: #8b5cf640;
+
+                            Text {
+                                width: 100%;
+                                height: 100%;
+                                text: user-name != "" ? user-name.character-count > 0 ? user-name : "?" : "?";
+                                font-italic: true;
+                                font-size: 20px;
+                                font-weight: 700;
+                                color: white;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        VerticalLayout {
+                            spacing: 6px;
+                            alignment: center;
+
+                            Text {
+                                text: user-name;
+                                font-size: 20px;
+                                font-weight: 600;
+                                color: text-primary;
+                            }
+
+                            // Status indicator
+                            HorizontalLayout {
+                                spacing: 8px;
+                                alignment: start;
+
+                                Rectangle {
+                                    width: 10px;
+                                    height: 10px;
+                                    border-radius: 5px;
+                                    background: is-active ? success : error;
+                                    drop-shadow-blur: is-active ? 8px : 0px;
+                                    drop-shadow-color: is-active ? #22c55e60 : transparent;
+
+                                    animate background { duration: 250ms; easing: ease-out; }
+                                    animate drop-shadow-blur { duration: 250ms; easing: ease-out; }
+                                }
+
+                                Text {
+                                    text: is-active ? "Active" : "Inactive";
+                                    font-size: 14px;
+                                    font-weight: 500;
+                                    color: is-active ? success : text-muted;
+
+                                    animate color { duration: 250ms; easing: ease-out; }
+                                }
+                            }
+                        }
+                    }
+
+                    // Divider
+                    Rectangle {
+                        height: 1px;
+                        background: border-subtle;
+                    }
+
+                    // Stats row
+                    HorizontalLayout {
+                        spacing: 12px;
+
+                        // Age stat
+                        Rectangle {
+                            horizontal-stretch: 1;
+                            height: 72px;
+                            background: surface;
+                            border-radius: 12px;
+                            border-width: 1px;
+                            border-color: border-subtle;
+
+                            VerticalLayout {
+                                alignment: center;
+                                spacing: 4px;
+
+                                Text {
+                                    text: "AGE";
+                                    font-size: 11px;
+                                    font-weight: 600;
+                                    color: text-muted;
+                                    letter-spacing: 1px;
+                                    horizontal-alignment: center;
+                                }
+
+                                Text {
+                                    text: user-age;
+                                    font-size: 28px;
+                                    font-weight: 700;
+                                    color: accent-primary;
+                                    horizontal-alignment: center;
+                                }
+                            }
+                        }
+
+                        // Status stat
+                        Rectangle {
+                            horizontal-stretch: 1;
+                            height: 72px;
+                            background: surface;
+                            border-radius: 12px;
+                            border-width: 1px;
+                            border-color: border-subtle;
+
+                            VerticalLayout {
+                                alignment: center;
+                                spacing: 4px;
+
+                                Text {
+                                    text: "STATUS";
+                                    font-size: 11px;
+                                    font-weight: 600;
+                                    color: text-muted;
+                                    letter-spacing: 1px;
+                                    horizontal-alignment: center;
+                                }
+
+                                Text {
+                                    text: is-active ? "Online" : "Offline";
+                                    font-size: 18px;
+                                    font-weight: 600;
+                                    color: is-active ? success : error;
+                                    horizontal-alignment: center;
+
+                                    animate color { duration: 250ms; easing: ease-out; }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Action buttons
+            HorizontalLayout {
+                spacing: 12px;
+
+                // Show Info button
+                Rectangle {
+                    horizontal-stretch: 1;
+                    height: 52px;
+                    border-radius: 14px;
+                    background: info-touch.pressed ? accent-primary.darker(20%) 
+                              : info-touch.has-hover ? accent-primary.brighter(10%) 
+                              : accent-primary;
+                    drop-shadow-blur: info-touch.has-hover ? 16px : 8px;
+                    drop-shadow-color: #8b5cf640;
+
+                    animate background { duration: 150ms; easing: ease-out; }
+                    animate drop-shadow-blur { duration: 150ms; easing: ease-out; }
+
+                    info-touch := TouchArea {
+                        clicked => { show-info(); }
+                    }
+
+                    HorizontalLayout {
+                        alignment: center;
+                        spacing: 8px;
+
+                        Text {
+                            text: "Show Info";
+                            color: white;
+                            font-size: 15px;
+                            font-weight: 600;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                // Toggle Status button
+                Rectangle {
+                    horizontal-stretch: 1;
+                    height: 52px;
+                    border-radius: 14px;
+                    background: toggle-touch.pressed ? (is-active ? error.darker(20%) : success.darker(20%))
+                              : toggle-touch.has-hover ? (is-active ? error.brighter(10%) : success.brighter(10%))
+                              : (is-active ? error : success);
+                    drop-shadow-blur: toggle-touch.has-hover ? 16px : 8px;
+                    drop-shadow-color: is-active ? #ef444440 : #22c55e40;
+
+                    animate background { duration: 150ms; easing: ease-out; }
+                    animate drop-shadow-blur { duration: 150ms; easing: ease-out; }
+
+                    toggle-touch := TouchArea {
+                        clicked => { toggle-active(); }
+                    }
+
+                    HorizontalLayout {
+                        alignment: center;
+                        spacing: 8px;
+
+                        Text {
+                            text: is-active ? "Deactivate" : "Activate";
+                            color: white;
+                            font-size: 15px;
+                            font-weight: 600;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+
+            // Spacer
+            Rectangle { vertical-stretch: 1; }
+
+            // Footer hint
+            Text {
+                text: "Properties bound to Ring application";
+                font-size: 12px;
+                color: text-muted;
+                horizontal-alignment: center;
+            }
+        }
+    }
+}

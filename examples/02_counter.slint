@@ -1,0 +1,220 @@
+export component App inherits Window {
+    title: "Counter";
+    width: 300px;
+    height: 420px;
+    background: #0a0a0f;
+
+    callback increment();
+    callback decrement();
+    callback reset();
+
+    in-out property <int> counter: 0;
+
+    // Background
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: @radial-gradient(circle, #1a1a2e 0%, #0a0a0f 100%);
+    }
+
+    // Decorative rings (centered with counter)
+    Rectangle {
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2 - 40px;
+        width: 220px;
+        height: 220px;
+        border-radius: 110px;
+        border-width: 2px;
+        border-color: #ffffff08;
+    }
+
+    Rectangle {
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2 - 20px;
+        width: 180px;
+        height: 180px;
+        border-radius: 90px;
+        border-width: 1px;
+        border-color: #ffffff05;
+    }
+
+    VerticalLayout {
+        alignment: center;
+        spacing: 30px;
+        padding: 30px;
+
+        // Counter display
+        Rectangle {
+            width: 180px;
+            height: 180px;
+            border-radius: 90px;
+            background: @linear-gradient(135deg, #1e1e2e, #252535);
+            border-width: 3px;
+            border-color: counter > 0 ? #22c55e40 : counter < 0 ? #ef444440 : #ffffff15;
+            drop-shadow-blur: 25px;
+            drop-shadow-color: counter > 0 ? #22c55e30 : counter < 0 ? #ef444430 : #00000050;
+
+            animate border-color, drop-shadow-color { duration: 300ms; }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 5px;
+
+                Text {
+                    text: counter >= 0 ? counter : counter;
+                    font-size: 64px;
+                    font-weight: 700;
+                    color: counter > 0 ? #22c55e : counter < 0 ? #ef4444 : white;
+                    horizontal-alignment: center;
+
+                    animate color { duration: 300ms; }
+                }
+
+                Text {
+                    text: counter == 1 ? "point" : "points";
+                    font-size: 14px;
+                    color: #666;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+
+        // Control buttons
+        HorizontalLayout {
+            alignment: center;
+            spacing: 15px;
+
+            // Decrement button
+            Rectangle {
+                width: 65px;
+                height: 65px;
+                border-radius: 32px;
+                background: dec-touch.pressed ? #b91c1c : dec-touch.has-hover ? #dc2626 : #ef4444;
+                drop-shadow-blur: dec-touch.has-hover ? 15px : 10px;
+                drop-shadow-color: #ef444440;
+
+                animate background, drop-shadow-blur { duration: 150ms; }
+
+                dec-touch := TouchArea {
+                    clicked => { decrement(); }
+                }
+
+                Text {
+                    text: "−";
+                    font-size: 36px;
+                    font-weight: 600;
+                    color: white;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+            // Reset button
+            Rectangle {
+                width: 55px;
+                height: 55px;
+                border-radius: 27px;
+                background: reset-touch.pressed ? #374151 : reset-touch.has-hover ? #4b5563 : #1f2937;
+                border-width: 1px;
+                border-color: #ffffff20;
+
+                animate background { duration: 150ms; }
+
+                reset-touch := TouchArea {
+                    clicked => { reset(); }
+                }
+
+                Text {
+                    text: "↺";
+                    font-size: 24px;
+                    color: #9ca3af;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+            // Increment button
+            Rectangle {
+                width: 65px;
+                height: 65px;
+                border-radius: 32px;
+                background: inc-touch.pressed ? #15803d : inc-touch.has-hover ? #16a34a : #22c55e;
+                drop-shadow-blur: inc-touch.has-hover ? 15px : 10px;
+                drop-shadow-color: #22c55e40;
+
+                animate background, drop-shadow-blur { duration: 150ms; }
+
+                inc-touch := TouchArea {
+                    clicked => { increment(); }
+                }
+
+                Text {
+                    text: "+";
+                    font-size: 36px;
+                    font-weight: 600;
+                    color: white;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        // Quick actions
+        HorizontalLayout {
+            alignment: center;
+            spacing: 10px;
+
+            for val in [-10, -5, +5, +10]: Rectangle {
+                width: 55px;
+                height: 32px;
+                border-radius: 8px;
+                background: quick-touch.has-hover ? #252535 : #1a1a2e;
+                border-width: 1px;
+                border-color: #ffffff10;
+
+                animate background { duration: 100ms; }
+
+                quick-touch := TouchArea {
+                    clicked => {
+                        if val > 0 {
+                            increment();
+                            increment();
+                            increment();
+                            increment();
+                            increment();
+                            if val == 10 {
+                                increment();
+                                increment();
+                                increment();
+                                increment();
+                                increment();
+                            }
+                        } else {
+                            decrement();
+                            decrement();
+                            decrement();
+                            decrement();
+                            decrement();
+                            if val == -10 {
+                                decrement();
+                                decrement();
+                                decrement();
+                                decrement();
+                                decrement();
+                            }
+                        }
+                    }
+                }
+
+                Text {
+                    text: val > 0 ? "+" + val : val;
+                    font-size: 13px;
+                    font-weight: 500;
+                    color: val > 0 ? #22c55e : #ef4444;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+}
