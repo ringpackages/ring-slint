@@ -8,9 +8,11 @@ export component App inherits Window {
 
     // === API ===
     callback add-todo(string);
+    callback insert-todo(string);
     callback toggle-todo(int);
     callback delete-todo(int);
     callback clear-completed();
+    callback reset-all();
 
     in-out property <string> new-todo-text: "";
     in-out property <int> todo-count: 0;
@@ -96,30 +98,61 @@ export component App inherits Window {
                 }
             }
 
-            // Clear Button
-            VerticalLayout {
-                alignment: center; 
-                Rectangle {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 12px;
-                    background: clear-touch.pressed ? bg-highlight : transparent;
-                    border-width: 1px;
-                    border-color: clear-touch.has-hover ? text-dim : transparent;
+            HorizontalLayout {
+                alignment: center;
+                spacing: 8px;
+                
+                VerticalLayout {
+                    alignment: center; 
+                    Rectangle {
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 12px;
+                        background: reset-touch.pressed ? bg-highlight : transparent;
+                        border-width: 1px;
+                        border-color: reset-touch.has-hover ? text-dim : transparent;
 
-                    animate background { duration: 150ms; }
-                    animate border-color { duration: 150ms; }
+                        animate background { duration: 150ms; }
+                        animate border-color { duration: 150ms; }
 
-                    clear-touch := TouchArea {
-                        clicked => { clear-completed(); }
+                        reset-touch := TouchArea {
+                            clicked => { reset-all(); }
+                        }
+
+                        Text {
+                            text: "↺"; 
+                            font-size: 18px;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: reset-touch.has-hover ? accent-primary : text-dim;
+                        }
                     }
+                }
+                
+                VerticalLayout {
+                    alignment: center; 
+                    Rectangle {
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 12px;
+                        background: clear-touch.pressed ? bg-highlight : transparent;
+                        border-width: 1px;
+                        border-color: clear-touch.has-hover ? text-dim : transparent;
 
-                    Text {
-                        text: "🗑"; 
-                        font-size: 16px;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
-                        color: clear-touch.has-hover ? danger : text-dim;
+                        animate background { duration: 150ms; }
+                        animate border-color { duration: 150ms; }
+
+                        clear-touch := TouchArea {
+                            clicked => { clear-completed(); }
+                        }
+
+                        Text {
+                            text: "🗑"; 
+                            font-size: 16px;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: clear-touch.has-hover ? danger : text-dim;
+                        }
                     }
                 }
             }
@@ -314,7 +347,35 @@ export component App inherits Window {
                             }
                         }
 
-                        // Floating Action Button
+                        VerticalLayout {
+                            alignment: center;
+                            Rectangle {
+                                width: 44px;
+                                height: 44px;
+                                border-radius: 22px;
+                                background: new-todo-text != "" 
+                                    ? bg-highlight
+                                    : bg-surface;
+
+                                animate background { duration: 200ms; }
+
+                                insert-touch := TouchArea {
+                                    clicked => { 
+                                        if (new-todo-text != "") { insert-todo(new-todo-text); }
+                                    }
+                                }
+
+                                Text {
+                                    text: "⇡";
+                                    font-size: 20px;
+                                    font-weight: 500;
+                                    color: new-todo-text != "" ? accent-secondary : text-dim;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+                        
                         VerticalLayout {
                             alignment: center;
                             Rectangle {

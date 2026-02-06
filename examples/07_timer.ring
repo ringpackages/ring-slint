@@ -1,6 +1,7 @@
 load "slint.ring"
 
 nTimerId = 0
+nOnceTimerId = 0
 nSeconds = 0
 
 oApp = new SlintApp {
@@ -12,6 +13,8 @@ oApp = new SlintApp {
     setCallback("check-running", :onCheckRunning)
     setCallback("restart-timer", :onRestartTimer)
     setCallback("change-interval", :onChangeInterval)
+    
+    nOnceTimerId = timerStartOnce(2000, :onOnceTimer)
     
     show()
     run()
@@ -68,16 +71,17 @@ func onCheckRunning
 
 func onRestartTimer
     if nTimerId != 0
-        oApp.timerStop(nTimerId)
-        nTimerId = 0
+        oApp.timerRestart(nTimerId)
+        oApp.setBool("running", true)
+        oApp.set("status", "Restarted")
+    else
+        nSeconds = 0
+        oApp.set("seconds", 0)
+        nInterval = oApp.getProperty("interval-ms")
+        nTimerId = oApp.timerStart(nInterval, :onTick)
+        oApp.setBool("running", true)
+        oApp.set("status", "Started")
     ok
-    nSeconds = 0
-    oApp.set("seconds", 0)
-    nInterval = oApp.getProperty("interval-ms")
-    nTimerId = oApp.timerStart(nInterval, :onTick)
-    oApp.setBool("running", true)
-    oApp.set("status", "Restarted")
-    ? "Timer restarted from 0 with ID: " + nTimerId
 
 func onChangeInterval
     nInterval = oApp.getProperty("interval-ms")
@@ -89,3 +93,6 @@ func onChangeInterval
         ? "No timer to modify - will use new interval when started"
         oApp.set("status", "Will use " + nInterval + "ms when started")
     ok
+
+func onOnceTimer
+    oApp.set("status", "One-shot timer fired!")

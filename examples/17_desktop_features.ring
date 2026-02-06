@@ -54,14 +54,14 @@ func onSendNotificationFull
 func onCopyToClipboard
     cText = oApp.getProperty("clipboard-text")
     if cText != NULL and len(cText) > 0
-        slint_clipboard_set(cText)
+        oApp.clipboardSet(cText)
         oApp.set("status-text", "Copied to clipboard: " + cText)
     else
         oApp.set("status-text", "Nothing to copy")
     ok
 
 func onPasteFromClipboard
-    cText = slint_clipboard_get()
+    cText = oApp.clipboardGet()
     if cText != NULL and len(cText) > 0
         oApp.set("clipboard-text", cText)
         oApp.set("status-text", "Pasted from clipboard")
@@ -70,7 +70,7 @@ func onPasteFromClipboard
     ok
 
 func onClearClipboard
-    slint_clipboard_clear()
+    oApp.clipboardClear()
     oApp.set("clipboard-text", "")
     oApp.set("status-text", "Clipboard cleared!")
 

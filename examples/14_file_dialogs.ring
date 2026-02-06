@@ -3,11 +3,17 @@ load "slint.ring"
 oApp = new SlintApp {
     loadUI("14_file_dialogs.slint")
     setCallback("open-file", :onOpenFile)
+    setCallback("open-file-simple", :onOpenFileSimple)
     setCallback("open-files", :onOpenFiles)
+    setCallback("open-files-simple", :onOpenFilesSimple)
     setCallback("save-file", :onSaveFile)
+    setCallback("save-file-simple", :onSaveFileSimple)
+    setCallback("save-file-name", :onSaveFileName)
     setCallback("open-folder", :onOpenFolder)
     setCallback("open-folders", :onOpenFolders)
     setCallback("show-msgbox", :onShowMsgbox)
+    setCallback("show-msgbox-warning", :onShowMsgboxWarning)
+    setCallback("show-msgbox-error", :onShowMsgboxError)
     setCallback("show-confirm", :onShowConfirm)
     setCallback("show-yesno", :onShowYesNo)
     show()
@@ -95,3 +101,47 @@ func onShowYesNo
     else
         oApp.set("result-text", "User clicked No")
     ok
+
+func onOpenFileSimple
+    cFile = oApp.fileOpen("Select Any File")
+    if cFile != NULL and len(cFile) > 0
+        oApp.set("result-text", "Selected file:" + nl + cFile)
+    else
+        oApp.set("result-text", "No file selected")
+    ok
+
+func onOpenFilesSimple
+    aFiles = oApp.fileOpenMultiple("Select Multiple Files")
+    if len(aFiles) > 0
+        cResult = "Selected " + len(aFiles) + " file(s):" + nl
+        for cFile in aFiles
+            cResult += "  " + cFile + nl
+        next
+        oApp.set("result-text", cResult)
+    else
+        oApp.set("result-text", "No files selected")
+    ok
+
+func onSaveFileSimple
+    cFile = oApp.fileSave("Save File")
+    if cFile != NULL and len(cFile) > 0
+        oApp.set("result-text", "Save to:" + nl + cFile)
+    else
+        oApp.set("result-text", "Save canceled")
+    ok
+
+func onSaveFileName
+    cFile = oApp.fileSaveWithName("Save File", "document.txt")
+    if cFile != NULL and len(cFile) > 0
+        oApp.set("result-text", "Save to:" + nl + cFile)
+    else
+        oApp.set("result-text", "Save canceled")
+    ok
+
+func onShowMsgboxWarning
+    oApp.msgboxWarning("Warning", "This is a warning message!")
+    oApp.set("result-text", "Warning message shown")
+
+func onShowMsgboxError
+    oApp.msgboxError("Error", "This is an error message!")
+    oApp.set("result-text", "Error message shown")

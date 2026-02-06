@@ -96,6 +96,7 @@ export component DynamicApp inherits Window {
     
     callback greet();
     callback update-message(string);
+    callback hide-window();
     
     in-out property <string> user-name: "";
     in-out property <string> greeting: "Enter your name and click Greet!";
@@ -198,6 +199,11 @@ export component DynamicApp inherits Window {
                         text: "Goodbye";
                         clicked => { update-message("Goodbye, see you later!"); }
                     }
+                    
+                    ActionButton {
+                        text: "Hide";
+                        clicked => { hide-window(); }
+                    }
                 }
             }
         }
@@ -205,17 +211,29 @@ export component DynamicApp inherits Window {
 }
 '
 
-? "Loading Slint UI from string..."
+oApp = new SlintApp
 
-oApp = new SlintApp {
+cCurrentStyle = oApp.getStyle()
+
+oApp.addLibraryPath("mylib", "/path/to/my/library")
+oApp.removeLibraryPath("mylib")
+oApp.clearLibraryPaths()
+
+oApp {
     loadUIString(cSlintSource, "dynamic://app.slint")
     setCallback("greet", :onGreet)
     setCallback("update-message", :onUpdateMessage)
-    show()
-    run()
+    setCallback("hide-window", :onHideWindow)
 }
 
-? "UI compiled successfully!"
+cName = oApp.definitionName()
+aProps = oApp.definitionProperties()
+aCallbacks = oApp.definitionCallbacks()
+aFuncs = oApp.definitionFunctions()
+aGlobals = oApp.definitionGlobals()
+
+oApp.show()
+oApp.run()
 
 func onGreet
     cName = oApp.getProperty("user-name")
@@ -229,4 +247,6 @@ func onGreet
 func onUpdateMessage
     cMessage = oApp.callbackArg(1)
     oApp.set("greeting", cMessage)
-    ? "Message updated: " + cMessage
+
+func onHideWindow
+    oApp.hide()

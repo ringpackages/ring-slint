@@ -295,11 +295,17 @@ export component App inherits Window {
     background: Theme.bg-base;
 
     callback open-file();
+    callback open-file-simple();
     callback open-files();
+    callback open-files-simple();
     callback save-file();
+    callback save-file-simple();
+    callback save-file-name();
     callback open-folder();
     callback open-folders();
     callback show-msgbox();
+    callback show-msgbox-warning();
+    callback show-msgbox-error();
     callback show-confirm();
     callback show-yesno();
 
@@ -376,28 +382,70 @@ export component App inherits Window {
             icon: "📄";
             accent: Theme.accent-secondary;
             
-            HorizontalLayout {
+            VerticalLayout {
                 spacing: Theme.space-md;
                 
-                ActionButton {
-                    text: "Open File";
-                    icon: "📂";
-                    accent: Theme.accent-secondary;
-                    clicked => { open-file(); }
+                HorizontalLayout {
+                    spacing: Theme.space-md;
+                    
+                    ActionButton {
+                        text: "Open File";
+                        icon: "📂";
+                        accent: Theme.accent-secondary;
+                        clicked => { open-file(); }
+                    }
+                    
+                    ActionButton {
+                        text: "Open Simple";
+                        icon: "📂";
+                        accent: Theme.accent-secondary;
+                        clicked => { open-file-simple(); }
+                    }
+                    
+                    ActionButton {
+                        text: "Open Multiple";
+                        icon: "📚";
+                        accent: Theme.accent-secondary;
+                        clicked => { open-files(); }
+                    }
                 }
                 
-                ActionButton {
-                    text: "Open Multiple";
-                    icon: "📚";
-                    accent: Theme.accent-secondary;
-                    clicked => { open-files(); }
+                HorizontalLayout {
+                    spacing: Theme.space-md;
+                    
+                    ActionButton {
+                        text: "Multi Simple";
+                        icon: "📚";
+                        accent: Theme.accent-secondary;
+                        clicked => { open-files-simple(); }
+                    }
+                    
+                    ActionButton {
+                        text: "Save File";
+                        icon: "💾";
+                        accent: Theme.accent-success;
+                        clicked => { save-file(); }
+                    }
+                    
+                    ActionButton {
+                        text: "Save Simple";
+                        icon: "💾";
+                        accent: Theme.accent-success;
+                        clicked => { save-file-simple(); }
+                    }
                 }
                 
-                ActionButton {
-                    text: "Save File";
-                    icon: "💾";
-                    accent: Theme.accent-success;
-                    clicked => { save-file(); }
+                HorizontalLayout {
+                    spacing: Theme.space-md;
+                    
+                    ActionButton {
+                        text: "Save Named";
+                        icon: "💾";
+                        accent: Theme.accent-success;
+                        clicked => { save-file-name(); }
+                    }
+                    
+                    Rectangle { horizontal-stretch: 1; }
                 }
             }
         }
@@ -434,28 +482,52 @@ export component App inherits Window {
             icon: "💬";
             accent: Theme.accent-warning;
             
-            HorizontalLayout {
+            VerticalLayout {
                 spacing: Theme.space-md;
                 
-                ActionButton {
-                    text: "Info Box";
-                    icon: "ℹ";
-                    accent: Theme.accent-secondary;
-                    clicked => { show-msgbox(); }
+                HorizontalLayout {
+                    spacing: Theme.space-md;
+                    
+                    ActionButton {
+                        text: "Info Box";
+                        icon: "ℹ";
+                        accent: Theme.accent-secondary;
+                        clicked => { show-msgbox(); }
+                    }
+                    
+                    ActionButton {
+                        text: "Warning";
+                        icon: "⚠";
+                        accent: Theme.accent-warning;
+                        clicked => { show-msgbox-warning(); }
+                    }
+                    
+                    ActionButton {
+                        text: "Error";
+                        icon: "✕";
+                        accent: Theme.accent-error;
+                        clicked => { show-msgbox-error(); }
+                    }
                 }
                 
-                ActionButton {
-                    text: "Confirm";
-                    icon: "❓";
-                    accent: Theme.accent-warning;
-                    clicked => { show-confirm(); }
-                }
-                
-                ActionButton {
-                    text: "Yes / No";
-                    icon: "✓";
-                    accent: Theme.accent-success;
-                    clicked => { show-yesno(); }
+                HorizontalLayout {
+                    spacing: Theme.space-md;
+                    
+                    ActionButton {
+                        text: "Confirm";
+                        icon: "❓";
+                        accent: Theme.accent-warning;
+                        clicked => { show-confirm(); }
+                    }
+                    
+                    ActionButton {
+                        text: "Yes / No";
+                        icon: "✓";
+                        accent: Theme.accent-success;
+                        clicked => { show-yesno(); }
+                    }
+                    
+                    Rectangle { horizontal-stretch: 1; }
                 }
             }
         }
