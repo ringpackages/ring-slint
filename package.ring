@@ -1,7 +1,7 @@
 aPackageInfo = [
 	:name = "Ring Slint",
 	:description = "Ring bindings for the Slint UI toolkit. Build beautiful, native applications with Ring and Slint UI.",
-	:folder = "slint",
+	:folder = "ring-slint",
 	:developer = "ysdragon",
 	:email = "youssefelkholey@gmail.com",
 	:license = "MIT",

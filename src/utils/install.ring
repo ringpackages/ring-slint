@@ -14,9 +14,9 @@ load "src/utils/color.ring"
 # ============================================================================
 
 C_PRETTY_NAME      = "Slint"
-C_PACKAGE_NAME     = "slint"
-C_NEW_PACKAGE_NAME = C_PACKAGE_NAME
-C_LIB_NAME         = "ring_" + C_PACKAGE_NAME
+C_PACKAGE_NAME     = "ring-slint"
+C_NEW_PACKAGE_NAME = "slint"
+C_LIB_NAME         = "ring_" + C_NEW_PACKAGE_NAME
 C_SAMPLES_DIR      = "Using" + C_PRETTY_NAME
 
 # ============================================================================
