@@ -1,0 +1,430 @@
+global Theme {
+    out property <color> bg-primary: #07070a;
+    out property <color> bg-secondary: #0d0d12;
+    out property <color> bg-tertiary: #13141a;
+    out property <color> bg-elevated: #1a1b23;
+    
+    out property <color> border-subtle: #ffffff10;
+    out property <color> border-default: #ffffff15;
+    out property <color> border-strong: #ffffff20;
+    
+    out property <color> text-primary: #f8fafc;
+    out property <color> text-secondary: #94a3b8;
+    out property <color> text-muted: #64748b;
+    out property <color> text-faint: #475569;
+    
+    out property <color> accent-primary: #8b5cf6;
+    out property <color> accent-primary-hover: #a78bfa;
+    out property <color> accent-primary-pressed: #7c3aed;
+    out property <color> accent-primary-glow: #8b5cf620;
+    
+    out property <color> success: #22c55e;
+    out property <color> success-bg: #22c55e15;
+    out property <color> warning: #f59e0b;
+    out property <color> error: #ef4444;
+    out property <color> error-bg: #ef444415;
+    
+    out property <length> spacing-xs: 4px;
+    out property <length> spacing-sm: 8px;
+    out property <length> spacing-md: 12px;
+    out property <length> spacing-lg: 16px;
+    out property <length> spacing-xl: 24px;
+    out property <length> spacing-2xl: 32px;
+    
+    out property <duration> duration-fast: 150ms;
+    out property <duration> duration-normal: 200ms;
+    out property <duration> duration-slow: 300ms;
+}
+
+component ActionButton inherits Rectangle {
+    in property <string> label;
+    in property <bool> primary: false;
+    in property <bool> active: false;
+    in property <bool> small: false;
+    callback clicked();
+    
+    min-width: small ? 100px : 110px;
+    height: 44px;
+    border-radius: 12px;
+    
+    background: active ? Theme.accent-primary : 
+                primary ? Theme.bg-elevated : 
+                Theme.bg-tertiary;
+    border-width: 1px;
+    border-color: active ? Theme.accent-primary : 
+                  primary ? Theme.border-strong : 
+                  Theme.border-default;
+    
+    drop-shadow-color: active ? Theme.accent-primary-glow : transparent;
+    drop-shadow-blur: active ? 16px : 0px;
+    drop-shadow-offset-y: active ? 4px : 0px;
+    
+    animate background { duration: Theme.duration-fast; easing: ease-out; }
+    animate border-color { duration: Theme.duration-fast; easing: ease-out; }
+    animate drop-shadow-blur { duration: Theme.duration-normal; easing: ease-out; }
+    animate drop-shadow-color { duration: Theme.duration-normal; easing: ease-out; }
+    
+    states [
+        pressed when touch.pressed: {
+            root.background: active ? Theme.accent-primary-pressed : 
+                            primary ? #252630 : #1f2028;
+            root.border-color: active ? Theme.accent-primary-pressed : 
+                              Theme.border-strong;
+        }
+        hovered when touch.has-hover: {
+            root.background: active ? Theme.accent-primary-hover : 
+                            primary ? #1f2028 : #181920;
+            root.border-color: active ? Theme.accent-primary-hover : 
+                              Theme.border-strong;
+        }
+    ]
+    
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+    
+    Text {
+        width: 100%;
+        height: 100%;
+        text: label;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        color: active ? Theme.bg-primary : 
+               primary ? Theme.text-primary : 
+               Theme.text-secondary;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        
+        animate color { duration: Theme.duration-fast; }
+    }
+}
+
+component IntervalSelector inherits Rectangle {
+    in property <string> label;
+    in property <bool> selected: false;
+    callback clicked();
+    
+    width: 80px;
+    height: 36px;
+    border-radius: 8px;
+    
+    background: selected ? Theme.accent-primary-glow : transparent;
+    border-width: 1px;
+    border-color: selected ? Theme.accent-primary : Theme.border-subtle;
+    
+    animate background { duration: Theme.duration-fast; easing: ease-out; }
+    animate border-color { duration: Theme.duration-fast; easing: ease-out; }
+    
+    states [
+        hovered when touch.has-hover && !selected: {
+            root.border-color: Theme.border-default;
+            root.background: Theme.bg-tertiary;
+        }
+    ]
+    
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+    
+    Text {
+        width: 100%;
+        height: 100%;
+        text: label;
+        font-size: 12px;
+        font-weight: 500;
+        color: selected ? Theme.accent-primary : Theme.text-muted;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        
+        animate color { duration: Theme.duration-fast; }
+    }
+}
+
+component StatusBadge inherits Rectangle {
+    in property <bool> active: false;
+    in property <string> label: "Stopped";
+    
+    height: 32px;
+    border-radius: 16px;
+    background: active ? Theme.success-bg : Theme.error-bg;
+    border-width: 1px;
+    border-color: active ? #22c55e30 : #ef444430;
+    
+    animate background { duration: Theme.duration-normal; easing: ease-out; }
+    animate border-color { duration: Theme.duration-normal; easing: ease-out; }
+    
+    HorizontalLayout {
+        padding-left: 16px;
+        padding-right: 16px;
+        alignment: center;
+        
+        Text {
+            text: label;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: active ? Theme.success : Theme.error;
+            vertical-alignment: center;
+            
+            animate color { duration: Theme.duration-normal; }
+        }
+    }
+}
+
+component Card inherits Rectangle {
+    in property <string> title: "";
+    
+    border-radius: 16px;
+    background: Theme.bg-secondary;
+    border-width: 1px;
+    border-color: Theme.border-subtle;
+}
+
+
+export component TimerApp inherits Window {
+    title: "Ring Timer";
+    width: 460px;
+    height: 560px;
+    background: Theme.bg-primary;
+
+    callback start-timer();
+    callback stop-timer();
+    callback reset-timer();
+    callback check-running();
+    callback restart-timer();
+    callback change-interval();
+
+    in-out property <int> seconds: 0;
+    in-out property <bool> running: false;
+    in-out property <string> status: "Stopped";
+    in-out property <int> interval-ms: 1000;
+
+    property <int> display-mins: Math.floor(seconds / 60);
+    property <int> display-secs: Math.mod(seconds, 60);
+
+    VerticalLayout {
+        padding: Theme.spacing-xl;
+        spacing: Theme.spacing-lg;
+        alignment: start;
+        
+        HorizontalLayout {
+            alignment: center;
+            height: 48px;
+            
+            Rectangle {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                background: Theme.accent-primary-glow;
+                border-width: 1px;
+                border-color: Theme.accent-primary;
+                
+                Text {
+                    width: 100%;
+                    height: 100%;
+                    text: "\u{23F1}";
+                    font-size: 18px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+            
+            Rectangle { width: Theme.spacing-md; }
+            
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px;
+                
+                Text {
+                    text: "Timer";
+                    font-size: 20px;
+                    font-weight: 700;
+                    color: Theme.text-primary;
+                }
+                
+                Text {
+                    text: "Precision timing control";
+                    font-size: 12px;
+                    color: Theme.text-muted;
+                }
+            }
+        }
+        
+        Card {
+            height: 200px;
+            
+            VerticalLayout {
+                alignment: center;
+                spacing: Theme.spacing-lg;
+                padding: Theme.spacing-xl;
+                
+                Rectangle {
+                    height: 100px;
+                    
+                    Rectangle {
+                        x: (parent.width - self.width) / 2;
+                        y: (parent.height - self.height) / 2;
+                        width: 260px;
+                        height: 90px;
+                        border-radius: 16px;
+                        background: running ? Theme.accent-primary-glow : transparent;
+                        
+                        animate background { duration: Theme.duration-slow; easing: ease-out; }
+                    }
+                    
+                    HorizontalLayout {
+                        alignment: center;
+                        spacing: 0px;
+                        
+                        Text {
+                            text: display-mins < 10 ? "0" + display-mins : display-mins;
+                            font-size: 64px;
+                            font-weight: 300;
+                            color: running ? Theme.text-primary : Theme.text-muted;
+                            vertical-alignment: center;
+                            
+                            animate color { duration: Theme.duration-normal; }
+                        }
+                        
+                        Text {
+                            text: ":";
+                            font-size: 64px;
+                            font-weight: 300;
+                            color: running ? Theme.accent-primary : Theme.text-faint;
+                            vertical-alignment: center;
+                            
+                            animate color { duration: Theme.duration-normal; }
+                        }
+                        
+                        Text {
+                            text: display-secs < 10 ? "0" + display-secs : display-secs;
+                            font-size: 64px;
+                            font-weight: 300;
+                            color: running ? Theme.text-primary : Theme.text-muted;
+                            vertical-alignment: center;
+                            
+                            animate color { duration: Theme.duration-normal; }
+                        }
+                    }
+                }
+                
+                HorizontalLayout {
+                    alignment: center;
+                    
+                    StatusBadge {
+                        active: running;
+                        label: status;
+                    }
+                }
+            }
+        }
+        
+        Card {
+            height: 130px;
+            
+            VerticalLayout {
+                alignment: center;
+                spacing: Theme.spacing-md;
+                padding: Theme.spacing-lg;
+                
+                HorizontalLayout {
+                    alignment: center;
+                    spacing: Theme.spacing-md;
+                    
+                    ActionButton {
+                        label: running ? "PAUSE" : "START";
+                        active: !running;
+                        clicked => {
+                            if (running) {
+                                stop-timer();
+                            } else {
+                                start-timer();
+                            }
+                        }
+                    }
+                    
+                    ActionButton {
+                        label: "RESET";
+                        clicked => { reset-timer(); }
+                    }
+                    
+                    ActionButton {
+                        label: "RESTART";
+                        primary: true;
+                        clicked => { restart-timer(); }
+                    }
+                }
+                
+                HorizontalLayout {
+                    alignment: center;
+                    
+                    ActionButton {
+                        label: "CHECK STATUS";
+                        small: true;
+                        min-width: 140px;
+                        clicked => { check-running(); }
+                    }
+                }
+            }
+        }
+        
+        Card {
+            height: 100px;
+            
+            VerticalLayout {
+                alignment: center;
+                spacing: Theme.spacing-md;
+                padding: Theme.spacing-lg;
+                
+                Text {
+                    text: "TICK INTERVAL";
+                    font-size: 11px;
+                    font-weight: 600;
+                    letter-spacing: 1.5px;
+                    color: Theme.text-faint;
+                    horizontal-alignment: center;
+                }
+                
+                HorizontalLayout {
+                    alignment: center;
+                    spacing: Theme.spacing-sm;
+                    
+                    IntervalSelector {
+                        label: "500ms";
+                        selected: interval-ms == 500;
+                        clicked => {
+                            interval-ms = 500;
+                            change-interval();
+                        }
+                    }
+                    
+                    IntervalSelector {
+                        label: "1000ms";
+                        selected: interval-ms == 1000;
+                        clicked => {
+                            interval-ms = 1000;
+                            change-interval();
+                        }
+                    }
+                    
+                    IntervalSelector {
+                        label: "2000ms";
+                        selected: interval-ms == 2000;
+                        clicked => {
+                            interval-ms = 2000;
+                            change-interval();
+                        }
+                    }
+                }
+            }
+        }
+        
+        Rectangle { 
+            vertical-stretch: 1;
+            min-height: Theme.spacing-sm; 
+        }
+    }
+}

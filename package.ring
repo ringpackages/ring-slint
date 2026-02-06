@@ -55,6 +55,8 @@ aPackageInfo = [
 		"examples/15_loadstring.ring",
 		"examples/16_desktop_features.ring",
 		"examples/16_desktop_features.slint",
+		"examples/17_timer.ring",
+		"examples/17_timer.slint",
 		"src/slint.ring",
 		"src/rust_src/Cargo.toml",
 		"src/rust_src/.gitignore",
