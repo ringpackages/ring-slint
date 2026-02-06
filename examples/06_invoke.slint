@@ -1,0 +1,386 @@
+export component App inherits Window {
+    title: "Invoke Demo";
+    width: 380px;
+    height: 650px;
+    background: #07070a;
+
+    // === API: Keep all callbacks and properties ===
+    callback calculate(int, int);
+    
+    pure callback add(int, int) -> int;
+    pure callback multiply(int, int) -> int;
+
+    in-out property <string> result: "Enter values & calculate";
+    in-out property <int> value-a: 5;
+    in-out property <int> value-b: 3;
+
+    add(a, b) => { a + b }
+    multiply(a, b) => { a * b }
+
+    // === Design System Tokens ===
+    property <color> surface: #0f1014;
+    property <color> surface-elevated: #16171c;
+    property <color> border-subtle: #ffffff10;
+    property <color> text-primary: #f8fafc;
+    property <color> text-secondary: #94a3b8;
+    property <color> text-muted: #64748b;
+    property <color> accent-purple: #8b5cf6;
+    property <color> accent-cyan: #06b6d4;
+    property <color> accent-amber: #f59e0b;
+
+    // Background gradient
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: @linear-gradient(180deg, #0f1014 0%, #07070a 100%);
+    }
+
+    VerticalLayout {
+        padding: 32px;
+        spacing: 24px;
+
+        // Header
+        VerticalLayout {
+            spacing: 8px;
+
+            Text {
+                text: "Invoke Demo";
+                font-size: 28px;
+                font-weight: 700;
+                color: text-primary;
+            }
+
+            Text {
+                text: "Call Slint functions from Ring";
+                font-size: 14px;
+                color: text-muted;
+            }
+        }
+
+        // Input card
+        Rectangle {
+            background: surface-elevated;
+            border-radius: 16px;
+            border-width: 1px;
+            border-color: border-subtle;
+            drop-shadow-blur: 20px;
+            drop-shadow-color: #00000025;
+
+            VerticalLayout {
+                padding: 24px;
+                spacing: 24px;
+
+                // Value A control
+                VerticalLayout {
+                    spacing: 12px;
+
+                    HorizontalLayout {
+                        alignment: space-between;
+
+                        Text {
+                            text: "Value A";
+                            font-size: 14px;
+                            font-weight: 600;
+                            color: text-secondary;
+                        }
+
+                        Rectangle {
+                            width: 48px;
+                            height: 24px;
+                            border-radius: 8px;
+                            background: #8b5cf620;
+
+                            Text {
+                                text: value-a;
+                                font-size: 14px;
+                                font-weight: 700;
+                                color: accent-purple;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    HorizontalLayout {
+                        spacing: 12px;
+
+                        // Decrement button
+                        Rectangle {
+                            width: 52px;
+                            height: 52px;
+                            border-radius: 14px;
+                            background: dec-a-touch.pressed ? accent-purple
+                                      : dec-a-touch.has-hover ? accent-purple.with-alpha(0.2)
+                                      : surface;
+                            border-width: 1px;
+                            border-color: accent-purple.with-alpha(0.5);
+
+                            animate background { duration: 120ms; easing: ease-out; }
+
+                            dec-a-touch := TouchArea {
+                                clicked => { value-a = max(0, value-a - 1); }
+                            }
+
+                            Text {
+                                text: "−";
+                                font-size: 28px;
+                                font-weight: 500;
+                                color: dec-a-touch.pressed ? white : accent-purple;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+
+                                animate color { duration: 120ms; easing: ease-out; }
+                            }
+                        }
+
+                        // Value display
+                        Rectangle {
+                            horizontal-stretch: 1;
+                            height: 52px;
+                            border-radius: 14px;
+                            background: surface;
+                            border-width: 1px;
+                            border-color: border-subtle;
+
+                            Text {
+                                text: value-a;
+                                font-size: 28px;
+                                font-weight: 700;
+                                color: accent-purple;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        // Increment button
+                        Rectangle {
+                            width: 52px;
+                            height: 52px;
+                            border-radius: 14px;
+                            background: inc-a-touch.pressed ? accent-purple
+                                      : inc-a-touch.has-hover ? accent-purple.with-alpha(0.2)
+                                      : surface;
+                            border-width: 1px;
+                            border-color: accent-purple.with-alpha(0.5);
+
+                            animate background { duration: 120ms; easing: ease-out; }
+
+                            inc-a-touch := TouchArea {
+                                clicked => { value-a = min(100, value-a + 1); }
+                            }
+
+                            Text {
+                                text: "+";
+                                font-size: 28px;
+                                font-weight: 500;
+                                color: inc-a-touch.pressed ? white : accent-purple;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+
+                                animate color { duration: 120ms; easing: ease-out; }
+                            }
+                        }
+                    }
+                }
+
+                // Operator indicator
+                HorizontalLayout {
+                    alignment: center;
+
+                    Rectangle {
+                        width: 80px;
+                        height: 28px;
+                        border-radius: 8px;
+                        background: surface;
+
+                        Text {
+                            text: "× and +";
+                            font-size: 13px;
+                            font-weight: 500;
+                            color: text-muted;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                // Value B control
+                VerticalLayout {
+                    spacing: 12px;
+
+                    HorizontalLayout {
+                        alignment: space-between;
+
+                        Text {
+                            text: "Value B";
+                            font-size: 14px;
+                            font-weight: 600;
+                            color: text-secondary;
+                        }
+
+                        Rectangle {
+                            width: 48px;
+                            height: 24px;
+                            border-radius: 8px;
+                            background: #06b6d420;
+
+                            Text {
+                                text: value-b;
+                                font-size: 14px;
+                                font-weight: 700;
+                                color: accent-cyan;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    HorizontalLayout {
+                        spacing: 12px;
+
+                        // Decrement button
+                        Rectangle {
+                            width: 52px;
+                            height: 52px;
+                            border-radius: 14px;
+                            background: dec-b-touch.pressed ? accent-cyan
+                                      : dec-b-touch.has-hover ? accent-cyan.with-alpha(0.2)
+                                      : surface;
+                            border-width: 1px;
+                            border-color: accent-cyan.with-alpha(0.5);
+
+                            animate background { duration: 120ms; easing: ease-out; }
+
+                            dec-b-touch := TouchArea {
+                                clicked => { value-b = max(0, value-b - 1); }
+                            }
+
+                            Text {
+                                text: "−";
+                                font-size: 28px;
+                                font-weight: 500;
+                                color: dec-b-touch.pressed ? white : accent-cyan;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+
+                                animate color { duration: 120ms; easing: ease-out; }
+                            }
+                        }
+
+                        // Value display
+                        Rectangle {
+                            horizontal-stretch: 1;
+                            height: 52px;
+                            border-radius: 14px;
+                            background: surface;
+                            border-width: 1px;
+                            border-color: border-subtle;
+
+                            Text {
+                                text: value-b;
+                                font-size: 28px;
+                                font-weight: 700;
+                                color: accent-cyan;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        // Increment button
+                        Rectangle {
+                            width: 52px;
+                            height: 52px;
+                            border-radius: 14px;
+                            background: inc-b-touch.pressed ? accent-cyan
+                                      : inc-b-touch.has-hover ? accent-cyan.with-alpha(0.2)
+                                      : surface;
+                            border-width: 1px;
+                            border-color: accent-cyan.with-alpha(0.5);
+
+                            animate background { duration: 120ms; easing: ease-out; }
+
+                            inc-b-touch := TouchArea {
+                                clicked => { value-b = min(100, value-b + 1); }
+                            }
+
+                            Text {
+                                text: "+";
+                                font-size: 28px;
+                                font-weight: 500;
+                                color: inc-b-touch.pressed ? white : accent-cyan;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+
+                                animate color { duration: 120ms; easing: ease-out; }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Calculate button
+        Rectangle {
+            height: 56px;
+            border-radius: 14px;
+            background: calc-touch.pressed ? accent-amber.darker(15%)
+                      : calc-touch.has-hover ? accent-amber.brighter(10%)
+                      : accent-amber;
+            drop-shadow-blur: calc-touch.has-hover ? 16px : 8px;
+            drop-shadow-color: #f59e0b40;
+
+            animate background { duration: 150ms; easing: ease-out; }
+            animate drop-shadow-blur { duration: 150ms; easing: ease-out; }
+
+            calc-touch := TouchArea {
+                clicked => { calculate(value-a, value-b); }
+            }
+
+            Text {
+                width: 100%;
+                height: 100%;
+                text: "Calculate";
+                color: #0f0f14;
+                font-size: 17px;
+                font-weight: 700;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        // Result display
+        Rectangle {
+            height: 88px;
+            background: surface-elevated;
+            border-radius: 16px;
+            border-width: 1px;
+            border-color: border-subtle;
+            drop-shadow-blur: 20px;
+            drop-shadow-color: #00000025;
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 8px;
+
+                Text {
+                    text: "Result";
+                    font-size: 12px;
+                    font-weight: 500;
+                    color: text-muted;
+                    horizontal-alignment: center;
+                }
+
+                Text {
+                    text: result;
+                    font-size: 20px;
+                    font-weight: 600;
+                    color: accent-amber;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+
+        // Spacer
+        Rectangle { vertical-stretch: 1; }
+    }
+}

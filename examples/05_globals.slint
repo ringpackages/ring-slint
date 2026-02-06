@@ -1,0 +1,263 @@
+export global AppState {
+    // === API: Keep all properties, callbacks, and functions ===
+    in-out property <string> user-name: "Guest";
+    in-out property <int> counter: 0;
+
+    callback increment();
+    callback save();
+
+    public function multiply(a: int, b: int) -> int {
+        return a * b;
+    }
+
+    public function format-greeting(name: string) -> string {
+        return "Hello, " + name + "!";
+    }
+}
+
+export component App inherits Window {
+    title: "Global State Demo";
+    width: 400px;
+    height: 520px;
+    background: #07070a;
+
+    // === Design System Tokens ===
+    property <color> surface: #0f1014;
+    property <color> surface-elevated: #16171c;
+    property <color> border-subtle: #ffffff10;
+    property <color> text-primary: #f8fafc;
+    property <color> text-secondary: #94a3b8;
+    property <color> text-muted: #64748b;
+    property <color> accent-purple: #8b5cf6;
+    property <color> accent-emerald: #10b981;
+
+    // Background gradient
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: @linear-gradient(180deg, #0f1014 0%, #07070a 100%);
+    }
+
+    VerticalLayout {
+        padding: 32px;
+        spacing: 24px;
+
+        // Header
+        VerticalLayout {
+            spacing: 8px;
+
+            Text {
+                text: "Global State";
+                font-size: 28px;
+                font-weight: 700;
+                color: text-primary;
+            }
+
+            Text {
+                text: "Shared state across components";
+                font-size: 14px;
+                color: text-muted;
+            }
+        }
+
+        // User card
+        Rectangle {
+            height: 96px;
+            background: surface-elevated;
+            border-radius: 16px;
+            border-width: 1px;
+            border-color: border-subtle;
+            drop-shadow-blur: 20px;
+            drop-shadow-color: #00000025;
+
+            HorizontalLayout {
+                padding: 20px;
+                spacing: 16px;
+
+                // Avatar with gradient
+                Rectangle {
+                    width: 56px;
+                    height: 56px;
+                    border-radius: 28px;
+                    background: @linear-gradient(135deg, #8b5cf6, #6366f1);
+                    drop-shadow-blur: 12px;
+                    drop-shadow-color: #8b5cf640;
+
+                    Text {
+                        width: 100%;
+                        height: 100%;
+                        text: AppState.user-name != "" ? "U" : "?";
+                        font-size: 22px;
+                        font-weight: 700;
+                        color: white;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+
+                VerticalLayout {
+                    alignment: center;
+                    spacing: 6px;
+
+                    Text {
+                        text: "Current User";
+                        font-size: 12px;
+                        font-weight: 500;
+                        color: text-muted;
+                    }
+
+                    Text {
+                        text: AppState.user-name;
+                        font-size: 20px;
+                        font-weight: 600;
+                        color: text-primary;
+                    }
+                }
+            }
+        }
+
+        // Counter display card
+        Rectangle {
+            background: surface-elevated;
+            border-radius: 16px;
+            border-width: 1px;
+            border-color: border-subtle;
+            drop-shadow-blur: 20px;
+            drop-shadow-color: #00000025;
+
+            HorizontalLayout {
+                padding: 28px;
+                alignment: space-between;
+
+                VerticalLayout {
+                    spacing: 12px;
+                    alignment: center;
+
+                    Text {
+                        text: "Counter";
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: text-muted;
+                    }
+
+                    Text {
+                        text: AppState.counter;
+                        font-size: 56px;
+                        font-weight: 700;
+                        color: accent-purple;
+                    }
+                }
+
+                // Quick increment button (circular)
+                Rectangle {
+                    width: 72px;
+                    height: 72px;
+                    border-radius: 36px;
+                    background: inc-mini-touch.pressed ? accent-purple.darker(20%)
+                              : inc-mini-touch.has-hover ? accent-purple
+                              : surface;
+                    border-width: 2px;
+                    border-color: accent-purple;
+                    drop-shadow-blur: inc-mini-touch.has-hover ? 16px : 0px;
+                    drop-shadow-color: #8b5cf650;
+
+                    animate background { duration: 150ms; easing: ease-out; }
+                    animate drop-shadow-blur { duration: 150ms; easing: ease-out; }
+
+                    inc-mini-touch := TouchArea {
+                        clicked => { AppState.increment(); }
+                    }
+
+                    Text {
+                        width: 100%;
+                        height: 100%;
+                        text: "+1";
+                        font-size: 20px;
+                        font-weight: 700;
+                        color: inc-mini-touch.has-hover ? white : accent-purple;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+
+                        animate color { duration: 150ms; easing: ease-out; }
+                    }
+                }
+            }
+        }
+
+        // Action buttons
+        HorizontalLayout {
+            spacing: 12px;
+
+            // Increment button
+            Rectangle {
+                horizontal-stretch: 1;
+                height: 56px;
+                border-radius: 14px;
+                background: inc-touch.pressed ? accent-purple.darker(20%)
+                          : inc-touch.has-hover ? accent-purple.brighter(10%)
+                          : accent-purple;
+                drop-shadow-blur: inc-touch.has-hover ? 16px : 8px;
+                drop-shadow-color: #8b5cf640;
+
+                animate background { duration: 150ms; easing: ease-out; }
+                animate drop-shadow-blur { duration: 150ms; easing: ease-out; }
+
+                inc-touch := TouchArea {
+                    clicked => { AppState.increment(); }
+                }
+
+                Text {
+                    width: 100%;
+                    height: 100%;
+                    text: "Increment";
+                    color: white;
+                    font-size: 16px;
+                    font-weight: 600;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+            // Save button
+            Rectangle {
+                horizontal-stretch: 1;
+                height: 56px;
+                border-radius: 14px;
+                background: save-touch.pressed ? accent-emerald.darker(20%)
+                          : save-touch.has-hover ? accent-emerald.brighter(10%)
+                          : accent-emerald;
+                drop-shadow-blur: save-touch.has-hover ? 16px : 8px;
+                drop-shadow-color: #10b98140;
+
+                animate background { duration: 150ms; easing: ease-out; }
+                animate drop-shadow-blur { duration: 150ms; easing: ease-out; }
+
+                save-touch := TouchArea {
+                    clicked => { AppState.save(); }
+                }
+
+                Text {
+                    width: 100%;
+                    height: 100%;
+                    text: "Save State";
+                    color: white;
+                    font-size: 16px;
+                    font-weight: 600;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        // Spacer
+        Rectangle { vertical-stretch: 1; }
+
+        // Footer
+        Text {
+            text: "Check console for save output";
+            font-size: 12px;
+            color: text-muted;
+            horizontal-alignment: center;
+        }
+    }
+}

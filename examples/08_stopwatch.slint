@@ -1,0 +1,407 @@
+import { ListView } from "std-widgets.slint";
+
+global Theme {
+    // Background layers
+    out property <color> bg-base: #07070a;
+    out property <color> bg-surface: #0f1014;
+    out property <color> bg-elevated: #161820;
+    out property <color> bg-hover: #1e2128;
+    
+    // Accent - Amber/Orange
+    out property <color> accent: #f59e0b;
+    out property <color> accent-light: #fbbf24;
+    out property <color> accent-dim: #d97706;
+    out property <color> accent-glow: #f59e0b40;
+    
+    // Text hierarchy
+    out property <color> text-primary: #f8fafc;
+    out property <color> text-secondary: #94a3b8;
+    out property <color> text-muted: #64748b;
+    
+    // Semantic
+    out property <color> success: #22c55e;
+    out property <color> success-dim: #16a34a;
+    out property <color> danger: #ef4444;
+    out property <color> danger-dim: #dc2626;
+    
+    // Borders
+    out property <color> border: #ffffff12;
+    out property <color> border-subtle: #ffffff08;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONTROL BUTTON
+// ═══════════════════════════════════════════════════════════════════════════════
+
+component ControlButton inherits Rectangle {
+    in property <string> icon;
+    in property <string> label;
+    in property <color> bg-color;
+    in property <color> bg-hover;
+    in property <color> bg-pressed;
+    in property <bool> disabled: false;
+    in property <bool> pill: false;
+    
+    callback clicked;
+    
+    property <bool> hovered: touch.has-hover && !disabled;
+    property <bool> pressed: touch.pressed && !disabled;
+    
+    width: pill ? 120px : 56px;
+    height: 56px;
+    border-radius: pill ? 28px : 16px;
+    background: disabled ? Theme.bg-elevated : (pressed ? bg-pressed : (hovered ? bg-hover : bg-color));
+    
+    drop-shadow-color: disabled ? transparent : bg-color.with-alpha(0.4);
+    drop-shadow-blur: hovered && !disabled ? 16px : 0px;
+    drop-shadow-offset-y: hovered && !disabled ? 3px : 0px;
+    
+    animate background { duration: 150ms; easing: ease-out; }
+    animate drop-shadow-blur { duration: 200ms; }
+    
+    touch := TouchArea {
+        mouse-cursor: disabled ? default : pointer;
+        enabled: !disabled;
+        clicked => { root.clicked(); }
+    }
+    
+    HorizontalLayout {
+        alignment: center;
+        spacing: 8px;
+        
+        Text {
+            text: icon;
+            font-size: pill ? 18px : 22px;
+            color: disabled ? Theme.text-muted : Theme.text-primary;
+            vertical-alignment: center;
+        }
+        
+        if pill: Text {
+            text: label;
+            font-size: 15px;
+            font-weight: 600;
+            color: disabled ? Theme.text-muted : Theme.text-primary;
+            vertical-alignment: center;
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LAP ITEM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+component LapItem inherits Rectangle {
+    in property <int> num;
+    in property <string> time;
+    in property <bool> is-latest: false;
+    
+    property <bool> hovered: touch.has-hover;
+    
+    height: 56px;
+    background: hovered ? Theme.bg-hover : transparent;
+    border-radius: 12px;
+    
+    animate background { duration: 150ms; }
+    
+    touch := TouchArea {}
+    
+    HorizontalLayout {
+        padding-left: 14px;
+        padding-right: 14px;
+        spacing: 12px;
+        
+        // Lap badge
+        Rectangle {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: is-latest ? Theme.accent.with-alpha(0.2) : Theme.bg-elevated;
+            border-width: 1px;
+            border-color: is-latest ? Theme.accent.with-alpha(0.4) : Theme.border;
+            
+            Text {
+                text: "#" + num;
+                font-size: 12px;
+                font-weight: 700;
+                color: is-latest ? Theme.accent : Theme.text-muted;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+        
+        Rectangle { horizontal-stretch: 1; }
+        
+        // Time
+        Text {
+            text: time;
+            font-size: 20px;
+            font-weight: 600;
+            font-family: "monospace";
+            color: is-latest ? Theme.accent : Theme.text-primary;
+            vertical-alignment: center;
+        }
+    }
+    
+    // Bottom separator
+    Rectangle {
+        y: parent.height - 1px;
+        x: 14px;
+        width: parent.width - 28px;
+        height: 1px;
+        background: Theme.border-subtle;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAIN APP
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export component App inherits Window {
+    title: "Stopwatch";
+    width: 380px;
+    height: 600px;
+    background: Theme.bg-base;
+
+    callback start-stop();
+    callback lap();
+    callback reset();
+
+    in-out property <string> display: "00:00.00";
+    in-out property <bool> running: false;
+    in-out property <[{num: int, time: string}]> laps: [];
+
+    // Background gradient
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        
+        // Amber glow when running
+        Rectangle {
+            x: parent.width / 2 - 150px;
+            y: -80px;
+            width: 300px;
+            height: 300px;
+            border-radius: 150px;
+            background: @radial-gradient(circle, #f59e0b15 0%, transparent 70%);
+            opacity: running ? 1.0 : 0.3;
+            
+            animate opacity { duration: 300ms; }
+        }
+    }
+
+    VerticalLayout {
+        padding: 24px;
+        spacing: 20px;
+
+        // Header
+        HorizontalLayout {
+            alignment: center;
+            spacing: 10px;
+            
+            Text {
+                text: "⏱️";
+                font-size: 16px;
+                vertical-alignment: center;
+            }
+            
+            Text {
+                text: "STOPWATCH";
+                font-size: 13px;
+                font-weight: 700;
+                color: Theme.text-muted;
+                letter-spacing: 3px;
+                vertical-alignment: center;
+            }
+        }
+
+        // Timer display card
+        Rectangle {
+            height: 170px;
+            background: Theme.bg-surface;
+            border-radius: 24px;
+            border-width: 1.5px;
+            border-color: running ? Theme.accent.with-alpha(0.4) : Theme.border;
+            
+            drop-shadow-color: running ? Theme.accent-glow : transparent;
+            drop-shadow-blur: running ? 30px : 0px;
+            
+            animate border-color { duration: 300ms; }
+            animate drop-shadow-blur { duration: 300ms; }
+            animate drop-shadow-color { duration: 300ms; }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 14px;
+
+                // Status indicator
+                HorizontalLayout {
+                    alignment: center;
+                    spacing: 10px;
+
+                    Rectangle {
+                        width: 10px;
+                        height: 10px;
+                        border-radius: 5px;
+                        background: running ? Theme.accent : Theme.text-muted;
+                        
+                        animate background { duration: 200ms; }
+                    }
+
+                    Text {
+                        text: running ? "RUNNING" : "READY";
+                        font-size: 11px;
+                        font-weight: 700;
+                        color: running ? Theme.accent : Theme.text-muted;
+                        letter-spacing: 2px;
+
+                        animate color { duration: 200ms; }
+                    }
+                }
+
+                // Time display
+                Text {
+                    text: display;
+                    font-size: 56px;
+                    font-weight: 700;
+                    font-family: "monospace";
+                    color: running ? Theme.accent : Theme.text-primary;
+                    horizontal-alignment: center;
+                    letter-spacing: 2px;
+
+                    animate color { duration: 200ms; }
+                }
+            }
+        }
+
+        // Control buttons
+        HorizontalLayout {
+            alignment: center;
+            spacing: 16px;
+
+            // Start/Stop button
+            ControlButton {
+                pill: true;
+                icon: running ? "⏸" : "▶";
+                label: running ? "Stop" : "Start";
+                bg-color: running ? Theme.danger : Theme.success;
+                bg-hover: running ? Theme.danger-dim : Theme.success-dim;
+                bg-pressed: running ? #b91c1c : #15803d;
+                
+                clicked => { start-stop(); }
+            }
+
+            // Lap button
+            ControlButton {
+                pill: true;
+                icon: "🏁";
+                label: "Lap";
+                bg-color: Theme.accent;
+                bg-hover: Theme.accent-dim;
+                bg-pressed: #b45309;
+                disabled: !running;
+                
+                clicked => { lap(); }
+            }
+
+            // Reset button
+            ControlButton {
+                icon: "↺";
+                bg-color: Theme.bg-elevated;
+                bg-hover: Theme.bg-hover;
+                bg-pressed: Theme.bg-surface;
+                
+                clicked => { reset(); }
+            }
+        }
+
+        // Laps section
+        Rectangle {
+            vertical-stretch: 1;
+            background: Theme.bg-surface;
+            border-radius: 20px;
+            border-width: 1px;
+            border-color: Theme.border;
+
+            VerticalLayout {
+                padding: 16px;
+                padding-top: 14px;
+                spacing: 12px;
+
+                // Laps header
+                HorizontalLayout {
+                    padding-left: 4px;
+                    padding-right: 4px;
+
+                    Text {
+                        text: "LAPS";
+                        font-size: 11px;
+                        font-weight: 700;
+                        color: Theme.text-muted;
+                        letter-spacing: 1.5px;
+                    }
+
+                    Rectangle { horizontal-stretch: 1; }
+
+                    // Lap count badge
+                    Rectangle {
+                        width: 32px;
+                        height: 22px;
+                        border-radius: 11px;
+                        background: laps.length > 0 ? Theme.accent.with-alpha(0.2) : Theme.bg-elevated;
+                        border-width: 1px;
+                        border-color: laps.length > 0 ? Theme.accent.with-alpha(0.3) : Theme.border;
+
+                        Text {
+                            text: laps.length;
+                            font-size: 11px;
+                            font-weight: 700;
+                            color: laps.length > 0 ? Theme.accent : Theme.text-muted;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                // Empty state
+                if laps.length == 0: Rectangle {
+                    vertical-stretch: 1;
+
+                    VerticalLayout {
+                        alignment: center;
+                        spacing: 10px;
+
+                        Text {
+                            text: "🏃";
+                            font-size: 36px;
+                            horizontal-alignment: center;
+                        }
+
+                        Text {
+                            text: "No laps recorded";
+                            font-size: 14px;
+                            color: Theme.text-muted;
+                            horizontal-alignment: center;
+                        }
+                        
+                        Text {
+                            text: "Start the timer and tap Lap";
+                            font-size: 12px;
+                            color: Theme.text-muted;
+                            horizontal-alignment: center;
+                            opacity: 0.7;
+                        }
+                    }
+                }
+
+                // Laps list
+                ListView {
+                    for item[idx] in laps: LapItem {
+                        num: item.num;
+                        time: item.time;
+                        is-latest: idx == 0;
+                    }
+                }
+            }
+        }
+    }
+}

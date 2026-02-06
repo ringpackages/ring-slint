@@ -1,0 +1,312 @@
+export component App inherits Window {
+    title: "Callbacks with Arguments";
+    width: 420px;
+    height: 600px;
+    background: #07070a;
+
+    // === API: Keep all callbacks and properties ===
+    callback button-clicked(string);
+    callback slider-changed(float);
+
+    in-out property <string> last-clicked: "None clicked yet";
+    in-out property <string> slider-display: "Value: 50";
+    in-out property <float> slider-value: 50;
+
+    // === Design System Tokens ===
+    property <color> surface: #0f1014;
+    property <color> surface-elevated: #16171c;
+    property <color> border-subtle: #ffffff10;
+    property <color> text-primary: #f8fafc;
+    property <color> text-secondary: #94a3b8;
+    property <color> text-muted: #64748b;
+    property <color> accent-purple: #8b5cf6;
+    property <color> accent-cyan: #06b6d4;
+    property <color> accent-emerald: #10b981;
+
+    // Background gradient
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: @linear-gradient(180deg, #0f1014 0%, #07070a 100%);
+    }
+
+    VerticalLayout {
+        padding: 32px;
+        spacing: 24px;
+
+        // Header
+        VerticalLayout {
+            spacing: 8px;
+
+            Text {
+                text: "Callbacks";
+                font-size: 28px;
+                font-weight: 700;
+                color: text-primary;
+            }
+
+            Text {
+                text: "Pass arguments from UI to Ring";
+                font-size: 14px;
+                color: text-muted;
+            }
+        }
+
+        // Status card
+        Rectangle {
+            height: 88px;
+            background: surface-elevated;
+            border-radius: 16px;
+            border-width: 1px;
+            border-color: border-subtle;
+            drop-shadow-blur: 20px;
+            drop-shadow-color: #00000025;
+
+            HorizontalLayout {
+                padding: 20px;
+                alignment: space-between;
+
+                VerticalLayout {
+                    alignment: center;
+                    spacing: 6px;
+
+                    Text {
+                        text: "Last Action";
+                        font-size: 12px;
+                        font-weight: 500;
+                        color: text-muted;
+                    }
+
+                    Text {
+                        text: last-clicked;
+                        font-size: 20px;
+                        font-weight: 600;
+                        color: text-primary;
+                    }
+                }
+
+                // Icon badge
+                Rectangle {
+                    width: 52px;
+                    height: 52px;
+                    border-radius: 14px;
+                    background: @linear-gradient(135deg, #8b5cf620, #6366f120);
+                    border-width: 1px;
+                    border-color: #8b5cf630;
+
+                    Text {
+                        width: 100%;
+                        height: 100%;
+                        text: "↩";
+                        font-size: 24px;
+                        color: accent-purple;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+
+        // Option buttons section
+        VerticalLayout {
+            spacing: 14px;
+
+            Text {
+                text: "Select Option";
+                font-size: 13px;
+                font-weight: 600;
+                color: text-secondary;
+            }
+
+            HorizontalLayout {
+                spacing: 12px;
+
+                for item in [
+                    { id: "A", color: #8b5cf6 },
+                    { id: "B", color: #06b6d4 },
+                    { id: "C", color: #10b981 }
+                ]: Rectangle {
+                    horizontal-stretch: 1;
+                    height: 72px;
+                    border-radius: 16px;
+                    background: btn-touch.pressed ? item.color 
+                              : btn-touch.has-hover ? item.color.with-alpha(0.15) 
+                              : surface-elevated;
+                    border-width: 1px;
+                    border-color: btn-touch.has-hover ? item.color.with-alpha(0.5) : border-subtle;
+                    drop-shadow-blur: btn-touch.has-hover ? 12px : 0px;
+                    drop-shadow-color: item.color.with-alpha(0.3);
+
+                    animate background { duration: 150ms; easing: ease-out; }
+                    animate border-color { duration: 150ms; easing: ease-out; }
+                    animate drop-shadow-blur { duration: 150ms; easing: ease-out; }
+
+                    btn-touch := TouchArea {
+                        clicked => { button-clicked(item.id); }
+                    }
+
+                    VerticalLayout {
+                        alignment: center;
+                        spacing: 4px;
+
+                        Text {
+                            text: item.id;
+                            font-size: 24px;
+                            font-weight: 700;
+                            color: btn-touch.pressed ? white : item.color;
+                            horizontal-alignment: center;
+
+                            animate color { duration: 150ms; easing: ease-out; }
+                        }
+
+                        Text {
+                            text: "Option";
+                            font-size: 12px;
+                            font-weight: 500;
+                            color: btn-touch.pressed ? white.with-alpha(0.8) : text-muted;
+                            horizontal-alignment: center;
+
+                            animate color { duration: 150ms; easing: ease-out; }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Slider section
+        Rectangle {
+            background: surface-elevated;
+            border-radius: 16px;
+            border-width: 1px;
+            border-color: border-subtle;
+
+            VerticalLayout {
+                padding: 20px;
+                spacing: 18px;
+
+                HorizontalLayout {
+                    alignment: space-between;
+
+                    Text {
+                        text: "Adjust Value";
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: text-secondary;
+                    }
+
+                    // Value badge
+                    Rectangle {
+                        width: 72px;
+                        height: 32px;
+                        border-radius: 10px;
+                        background: @linear-gradient(135deg, #06b6d420, #0891b220);
+                        border-width: 1px;
+                        border-color: #06b6d430;
+
+                        Text {
+                            text: Math.round(slider-value);
+                            font-size: 16px;
+                            font-weight: 700;
+                            color: accent-cyan;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                // Slider track
+                Rectangle {
+                    height: 10px;
+                    background: surface;
+                    border-radius: 5px;
+
+                    // Progress fill
+                    Rectangle {
+                        width: parent.width * slider-value / 100;
+                        height: 100%;
+                        background: @linear-gradient(90deg, #8b5cf6, #06b6d4);
+                        border-radius: 5px;
+
+                        animate width { duration: 80ms; easing: ease-out; }
+                    }
+
+                    // Thumb
+                    Rectangle {
+                        x: max(0px, min(parent.width - self.width, (parent.width - self.width) * slider-value / 100));
+                        y: (parent.height - self.height) / 2;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 12px;
+                        background: white;
+                        border-width: 2px;
+                        border-color: accent-cyan;
+                        drop-shadow-blur: 8px;
+                        drop-shadow-color: #00000050;
+
+                        animate x { duration: 80ms; easing: ease-out; }
+                    }
+
+                    TouchArea {
+                        moved => {
+                            if self.pressed {
+                                slider-value = clamp(self.mouse-x / parent.width * 100, 0, 100);
+                                slider-changed(slider-value);
+                            }
+                        }
+                        clicked => {
+                            slider-value = clamp(self.mouse-x / parent.width * 100, 0, 100);
+                            slider-changed(slider-value);
+                        }
+                    }
+                }
+
+                // Preset buttons
+                HorizontalLayout {
+                    spacing: 8px;
+
+                    for val in [0, 25, 50, 75, 100]: Rectangle {
+                        horizontal-stretch: 1;
+                        height: 44px;
+                        border-radius: 12px;
+                        background: Math.round(slider-value) == val 
+                                  ? accent-purple 
+                                  : preset-touch.has-hover ? surface : transparent;
+                        border-width: Math.round(slider-value) == val ? 0px : 1px;
+                        border-color: border-subtle;
+
+                        animate background { duration: 120ms; easing: ease-out; }
+
+                        preset-touch := TouchArea {
+                            clicked => {
+                                slider-value = val;
+                                slider-changed(val);
+                            }
+                        }
+
+                        Text {
+                            text: val + "%";
+                            font-size: 14px;
+                            font-weight: 600;
+                            color: Math.round(slider-value) == val ? white : text-muted;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+
+                            animate color { duration: 120ms; easing: ease-out; }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Spacer
+        Rectangle { vertical-stretch: 1; }
+
+        // Footer
+        Text {
+            text: "Check console for callback output";
+            font-size: 12px;
+            color: text-muted;
+            horizontal-alignment: center;
+        }
+    }
+}

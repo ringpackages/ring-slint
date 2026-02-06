@@ -1,0 +1,351 @@
+import { ListView, Button } from "std-widgets.slint";
+
+export component App inherits Window {
+    title: "Tasks";
+    width: 400px;
+    height: 680px;
+    background: #13141f;
+
+    // === API ===
+    callback add-todo(string);
+    callback toggle-todo(int);
+    callback delete-todo(int);
+    callback clear-completed();
+
+    in-out property <string> new-todo-text: "";
+    in-out property <int> todo-count: 0;
+    in-out property <[{text: string, completed: bool}]> todos: [];
+
+    // === Design Tokens ===
+    property <color> bg-base: #13141f;
+    property <color> bg-surface: #1e2030;
+    property <color> bg-highlight: #2f334d;
+    property <color> text-main: #c0caf5;
+    property <color> text-dim: #565f89;
+    property <color> accent-primary: #7aa2f7; // Neon Blue
+    property <color> accent-glow: #7aa2f740;
+    property <color> accent-secondary: #bb9af7; // Soft Purple
+    property <color> danger: #f7768e;
+
+    // Background Gradient
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: @radial-gradient(circle, #1e2030 0%, #13141f 80%);
+    }
+
+    // Decorative blur orb (Top Left)
+    Rectangle {
+        x: -100px;
+        y: -100px;
+        width: 300px;
+        height: 300px;
+        background: @radial-gradient(circle, #7aa2f708 0%, transparent 70%);
+        border-radius: 150px;
+    }
+
+    VerticalLayout {
+        padding: 24px;
+        padding-bottom: 0px;
+        spacing: 0px;
+
+        // --- Header ---
+        HorizontalLayout {
+            height: 80px;
+            alignment: space-between;
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 4px;
+                
+                Text {
+                    text: "My Tasks";
+                    font-size: 32px;
+                    font-weight: 800;
+                    color: text-main;
+                    letter-spacing: 0.5px;
+                }
+                
+                HorizontalLayout {
+                    spacing: 8px;
+                    
+                    Text {
+                        text: "Keep it up.";
+                        font-size: 14px;
+                        color: text-dim;
+                        vertical-alignment: center;
+                    }
+                    
+                    // Status Pill
+                    Rectangle {
+                        background: #2f334d;
+                        border-radius: 10px;
+                        width: 60px;
+                        height: 20px;
+                        y: (parent.height - self.height) / 2; // Manual vertical centering
+                        
+                        Text {
+                            text: todo-count + " Active";
+                            font-size: 10px;
+                            color: accent-primary;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+
+            // Clear Button
+            VerticalLayout {
+                alignment: center; 
+                Rectangle {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 12px;
+                    background: clear-touch.pressed ? bg-highlight : transparent;
+                    border-width: 1px;
+                    border-color: clear-touch.has-hover ? text-dim : transparent;
+
+                    animate background { duration: 150ms; }
+                    animate border-color { duration: 150ms; }
+
+                    clear-touch := TouchArea {
+                        clicked => { clear-completed(); }
+                    }
+
+                    Text {
+                        text: "🗑"; 
+                        font-size: 16px;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                        color: clear-touch.has-hover ? danger : text-dim;
+                    }
+                }
+            }
+        }
+
+        // --- List Area ---
+        Rectangle {
+            vertical-stretch: 1;
+            clip: true;
+
+            // Empty State
+            if todos.length == 0: VerticalLayout {
+                alignment: center;
+                spacing: 20px;
+
+                // Center the circle horizontally
+                HorizontalLayout {
+                    alignment: center;
+                    Rectangle {
+                        height: 120px;
+                        width: 120px;
+                        border-radius: 60px;
+                        background: bg-surface;
+
+                        Text {
+                            text: "✓";
+                            font-size: 48px;
+                            color: accent-secondary;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                Text {
+                    text: "All Caught Up";
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: text-main;
+                    horizontal-alignment: center;
+                }
+                
+                Text {
+                    text: "Relax or add a new goal below.";
+                    font-size: 14px;
+                    color: text-dim;
+                    horizontal-alignment: center;
+                }
+            }
+
+            ListView {
+                for todo[idx] in todos: Rectangle {
+                    height: 64px;
+                    background: item-touch.has-hover ? bg-surface : transparent;
+                    border-radius: 12px;
+                    animate background { duration: 100ms; }
+
+                    item-touch := TouchArea {
+                        clicked => { toggle-todo(idx); }
+                    }
+
+                    HorizontalLayout {
+                        padding-left: 12px;
+                        padding-right: 12px;
+                        spacing: 16px;
+                        
+                        // Checkbox Container
+                        VerticalLayout {
+                            alignment: center;
+                            Rectangle {
+                                width: 24px;
+                                height: 24px;
+                                border-radius: 12px;
+                                border-width: todo.completed ? 0px : 2px;
+                                border-color: todo.completed ? transparent : text-dim;
+                                background: todo.completed ? @linear-gradient(135deg, accent-primary 0%, accent-secondary 100%) : transparent;
+
+                                animate background { duration: 200ms; }
+                                
+                                Text {
+                                    text: "✓";
+                                    font-size: 14px;
+                                    color: #ffffff;
+                                    font-weight: 900;
+                                    opacity: todo.completed ? 1 : 0;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+
+                        // Text Content
+                        VerticalLayout {
+                            alignment: center;
+                            horizontal-stretch: 1;
+                            
+                            Text {
+                                text: todo.text;
+                                font-size: 15px;
+                                color: todo.completed ? text-dim : text-main;
+                                font-weight: todo.completed ? 400 : 500;
+                                overflow: elide;
+                            }
+                        }
+
+                        // Delete Action
+                        VerticalLayout {
+                            alignment: center;
+                            Rectangle {
+                                width: 32px;
+                                height: 32px;
+                                border-radius: 8px;
+                                background: del-touch.has-hover ? #f7768e20 : transparent;
+
+                                del-touch := TouchArea {
+                                    clicked => { delete-todo(idx); }
+                                }
+
+                                Text {
+                                    text: "×";
+                                    font-size: 20px;
+                                    color: del-touch.has-hover ? danger : text-dim;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Divider
+                    Rectangle {
+                        y: parent.height - 1px;
+                        x: 12px;
+                        width: parent.width - 24px;
+                        height: 1px;
+                        background: bg-surface;
+                        opacity: 0.5;
+                    }
+                }
+            }
+        }
+
+        // --- Bottom Input Section ---
+        Rectangle {
+            height: 100px;
+            
+            HorizontalLayout {
+                padding-top: 10px;
+                padding-bottom: 24px;
+                alignment: center;
+                width: 100%;
+
+                // Floating capsule
+                Rectangle {
+                    height: 56px;
+                    width: 100%;
+                    background: bg-surface;
+                    border-radius: 28px;
+                    border-width: 1px;
+                    border-color: input-field.has-focus ? accent-primary : bg-highlight;
+                    
+                    drop-shadow-blur: input-field.has-focus ? 20px : 0px;
+                    drop-shadow-color: input-field.has-focus ? accent-glow : transparent;
+
+                    animate border-color { duration: 200ms; }
+                    animate drop-shadow-blur { duration: 200ms; }
+
+                    HorizontalLayout {
+                        padding-left: 20px;
+                        padding-right: 6px;
+                        spacing: 12px;
+
+                        input-field := TextInput {
+                            horizontal-stretch: 1;
+                            text <=> new-todo-text;
+                            font-size: 16px;
+                            color: text-main;
+                            vertical-alignment: center;
+                            selection-background-color: accent-primary;
+                            accepted => { add-todo(new-todo-text); }
+
+                            // Placeholder
+                            Rectangle {
+                                visible: new-todo-text == "";
+                                Text {
+                                    text: "Add a task...";
+                                    color: text-dim;
+                                    font-size: 16px;
+                                    vertical-alignment: center;
+                                    width: 100%;
+                                }
+                            }
+                        }
+
+                        // Floating Action Button
+                        VerticalLayout {
+                            alignment: center;
+                            Rectangle {
+                                width: 44px;
+                                height: 44px;
+                                border-radius: 22px;
+                                background: new-todo-text != "" 
+                                    ? @linear-gradient(135deg, accent-primary 0%, accent-secondary 100%)
+                                    : bg-highlight;
+
+                                animate background { duration: 200ms; }
+
+                                add-touch := TouchArea {
+                                    clicked => { 
+                                        if (new-todo-text != "") { add-todo(new-todo-text); }
+                                    }
+                                }
+
+                                Text {
+                                    text: "+";
+                                    font-size: 24px;
+                                    font-weight: 300;
+                                    color: new-todo-text != "" ? #ffffff : text-dim;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
