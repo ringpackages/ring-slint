@@ -1,0 +1,479 @@
+global Theme {
+    // Backgrounds
+    out property <color> bg-base: #07070a;
+    out property <color> bg-surface: #0d0d12;
+    out property <color> bg-elevated: #141419;
+    out property <color> bg-overlay: #1a1b23;
+    
+    // Accents
+    out property <color> accent-primary: #8b5cf6;
+    out property <color> accent-secondary: #6366f1;
+    out property <color> accent-cyan: #06b6d4;
+    out property <color> accent-success: #22c55e;
+    out property <color> accent-warning: #f59e0b;
+    out property <color> accent-error: #ef4444;
+    
+    // Text
+    out property <color> text-primary: #f8fafc;
+    out property <color> text-secondary: #94a3b8;
+    out property <color> text-muted: #64748b;
+    
+    // Borders
+    out property <color> border-subtle: #ffffff08;
+    out property <color> border-medium: #ffffff12;
+    out property <color> border-strong: #ffffff20;
+    
+    // Spacing
+    out property <length> space-xs: 4px;
+    out property <length> space-sm: 8px;
+    out property <length> space-md: 12px;
+    out property <length> space-lg: 16px;
+    out property <length> space-xl: 24px;
+    out property <length> space-2xl: 32px;
+    
+    // Radius
+    out property <length> radius-sm: 6px;
+    out property <length> radius-md: 10px;
+    out property <length> radius-lg: 14px;
+    out property <length> radius-xl: 20px;
+}
+
+component ThemedScrollView inherits Rectangle {
+    in property <length> viewport-height;
+    in-out property <length> viewport-y: 0;
+
+    property <length> scroll-range: max(0px, viewport-height - root.height);
+
+    clip: true;
+    background: transparent;
+
+    TouchArea {
+        width: parent.width - 14px;
+        height: parent.height;
+
+        scroll-event(e) => {
+            viewport-y = clamp(viewport-y + e.delta-y * 0.5, -scroll-range, 0px);
+            accept
+        }
+    }
+
+    Rectangle {
+        y: viewport-y;
+        width: parent.width - 14px;
+        height: viewport-height;
+
+        @children
+    }
+
+    // Scrollbar track
+    scrollbar := Rectangle {
+        x: parent.width - 8px;
+        width: 6px;
+        height: parent.height;
+        background: Theme.bg-overlay;
+        border-radius: 3px;
+
+        property <length> thumb-h: max(40px, self.height * self.height / max(1px, viewport-height));
+        property <length> thumb-range: self.height - self.thumb-h;
+
+        track-touch := TouchArea {
+            clicked => {
+                root.viewport-y = clamp(
+                    -(self.mouse-y - scrollbar.thumb-h / 2) * scroll-range / scrollbar.thumb-range,
+                    -scroll-range,
+                    0px
+                );
+            }
+        }
+
+        // Thumb
+        Rectangle {
+            width: parent.width;
+            height: scrollbar.thumb-h;
+            y: scroll-range > 0px ? -viewport-y * scrollbar.thumb-range / scroll-range : 0px;
+            background: thumb-touch.pressed ? Theme.accent-primary : thumb-touch.has-hover ? Theme.text-muted : Theme.border-strong;
+            border-radius: 3px;
+            
+            animate background { duration: 150ms; easing: ease-out; }
+
+            thumb-touch := TouchArea {
+                moved => {
+                    if self.pressed {
+                        root.viewport-y = clamp(
+                            root.viewport-y - (self.mouse-y - self.pressed-y) * scroll-range / scrollbar.thumb-range,
+                            -scroll-range,
+                            0px
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+component ActionButton inherits Rectangle {
+    in property <string> text;
+    in property <string> icon: "";
+    in property <color> accent: Theme.accent-secondary;
+    
+    callback clicked();
+    
+    height: 44px;
+    min-width: 110px;
+    horizontal-stretch: 1;
+    background: touch.pressed 
+        ? Theme.bg-overlay 
+        : touch.has-hover 
+            ? Theme.bg-elevated 
+            : Theme.bg-surface;
+    border-radius: Theme.radius-md;
+    border-width: 1px;
+    border-color: touch.has-hover ? accent.with-alpha(0.4) : Theme.border-subtle;
+    
+    drop-shadow-blur: touch.has-hover ? 12px : 0px;
+    drop-shadow-color: accent.with-alpha(0.2);
+    
+    animate background { duration: 150ms; easing: ease-out; }
+    animate border-color { duration: 150ms; easing: ease-out; }
+    animate drop-shadow-blur { duration: 200ms; }
+    
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+    
+    HorizontalLayout {
+        padding-left: Theme.space-md;
+        padding-right: Theme.space-md;
+        spacing: Theme.space-sm;
+        alignment: center;
+        
+        if icon != "" : Text {
+            text: icon;
+            color: touch.has-hover ? accent : Theme.text-muted;
+            font-size: 16px;
+            vertical-alignment: center;
+            
+            animate color { duration: 150ms; }
+        }
+        
+        Text {
+            text: root.text;
+            color: touch.has-hover ? Theme.text-primary : Theme.text-secondary;
+            font-size: 13px;
+            font-weight: 500;
+            vertical-alignment: center;
+            
+            animate color { duration: 150ms; }
+        }
+    }
+}
+
+component SectionCard inherits Rectangle {
+    in property <string> title;
+    in property <string> icon: "";
+    in property <color> accent: Theme.accent-primary;
+    
+    background: Theme.bg-surface;
+    border-radius: Theme.radius-lg;
+    border-width: 1px;
+    border-color: Theme.border-subtle;
+    
+    // Top accent line
+    Rectangle {
+        x: Theme.space-xl;
+        y: 0;
+        width: parent.width - Theme.space-xl * 2;
+        height: 1px;
+        background: @linear-gradient(90deg, transparent 0%, accent.with-alpha(0.3) 50%, transparent 100%);
+    }
+    
+    VerticalLayout {
+        padding: Theme.space-lg;
+        spacing: Theme.space-md;
+        
+        // Header
+        HorizontalLayout {
+            spacing: Theme.space-sm;
+            
+            if icon != "" : Rectangle {
+                width: 24px;
+                height: 24px;
+                border-radius: Theme.radius-sm;
+                background: accent.with-alpha(0.15);
+                
+                Text {
+                    text: icon;
+                    font-size: 12px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+            
+            Text {
+                text: title;
+                color: Theme.text-muted;
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 1px;
+                vertical-alignment: center;
+            }
+        }
+        
+        @children
+    }
+}
+
+component ResultDisplay inherits Rectangle {
+    in property <string> result: "";
+    
+    property <bool> has-result: result != "Click a button to open a dialog..." && result != "";
+    
+    min-height: 120px;
+    background: Theme.bg-base;
+    border-radius: Theme.radius-md;
+    border-width: 1px;
+    border-color: Theme.border-subtle;
+    
+    ThemedScrollView {
+        width: 100%;
+        height: 100%;
+        viewport-height: content.preferred-height;
+        
+        content := VerticalLayout {
+            padding: Theme.space-lg;
+            spacing: Theme.space-sm;
+            
+            // Status indicator
+            HorizontalLayout {
+                spacing: Theme.space-sm;
+                
+                Rectangle {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 4px;
+                    background: has-result ? Theme.accent-success : Theme.text-muted;
+                    
+                    // Pulse ring
+                    Rectangle {
+                        x: -3px;
+                        y: -3px;
+                        width: 14px;
+                        height: 14px;
+                        border-radius: 7px;
+                        background: has-result ? Theme.accent-success.with-alpha(0.2) : transparent;
+                    }
+                }
+                
+                Text {
+                    text: has-result ? "RESULT" : "READY";
+                    color: has-result ? Theme.accent-success : Theme.text-muted;
+                    font-size: 10px;
+                    font-weight: 700;
+                    letter-spacing: 1px;
+                    vertical-alignment: center;
+                }
+            }
+            
+            Rectangle { height: Theme.space-sm; }
+            
+            Text {
+                text: result == "" ? "Click a button to open a dialog..." : result;
+                color: has-result ? Theme.text-secondary : Theme.text-muted;
+                font-size: 13px;
+                font-family: "monospace";
+                wrap: word-wrap;
+            }
+        }
+    }
+}
+
+export component App inherits Window {
+    title: "Native File Dialogs";
+    width: 560px;
+    height: 600px;
+    background: Theme.bg-base;
+
+    callback open-file();
+    callback open-files();
+    callback save-file();
+    callback open-folder();
+    callback open-folders();
+    callback show-msgbox();
+    callback show-confirm();
+    callback show-yesno();
+
+    in-out property <string> result-text: "Click a button to open a dialog...";
+
+    // Ambient background glow
+    Rectangle {
+        x: -80px;
+        y: -80px;
+        width: 280px;
+        height: 280px;
+        border-radius: 140px;
+        background: @radial-gradient(circle, Theme.accent-secondary.with-alpha(0.06) 0%, transparent 70%);
+    }
+    
+    Rectangle {
+        x: parent.width - 120px;
+        y: parent.height - 180px;
+        width: 220px;
+        height: 220px;
+        border-radius: 110px;
+        background: @radial-gradient(circle, Theme.accent-primary.with-alpha(0.06) 0%, transparent 70%);
+    }
+
+    ThemedScrollView {
+        viewport-height: main-content.preferred-height;
+        
+        main-content := VerticalLayout {
+            padding: Theme.space-2xl;
+            spacing: Theme.space-xl;
+
+            HorizontalLayout {
+            alignment: center;
+            spacing: Theme.space-lg;
+            
+            // Icon
+            Rectangle {
+                width: 52px;
+                height: 52px;
+                border-radius: Theme.radius-lg;
+                background: @linear-gradient(135deg, Theme.accent-secondary.with-alpha(0.2) 0%, Theme.accent-primary.with-alpha(0.2) 100%);
+                border-width: 1px;
+                border-color: Theme.accent-secondary.with-alpha(0.3);
+                
+                Text {
+                    text: "📂";
+                    font-size: 26px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+            
+            VerticalLayout {
+                alignment: center;
+                spacing: Theme.space-xs;
+                
+                Text {
+                    text: "File Dialogs";
+                    font-size: 28px;
+                    font-weight: 700;
+                    color: Theme.text-primary;
+                }
+                
+                Text {
+                    text: "Native system dialogs via rfd";
+                    color: Theme.text-muted;
+                    font-size: 13px;
+                }
+            }
+        }
+
+        SectionCard {
+            title: "FILE OPERATIONS";
+            icon: "📄";
+            accent: Theme.accent-secondary;
+            
+            HorizontalLayout {
+                spacing: Theme.space-md;
+                
+                ActionButton {
+                    text: "Open File";
+                    icon: "📂";
+                    accent: Theme.accent-secondary;
+                    clicked => { open-file(); }
+                }
+                
+                ActionButton {
+                    text: "Open Multiple";
+                    icon: "📚";
+                    accent: Theme.accent-secondary;
+                    clicked => { open-files(); }
+                }
+                
+                ActionButton {
+                    text: "Save File";
+                    icon: "💾";
+                    accent: Theme.accent-success;
+                    clicked => { save-file(); }
+                }
+            }
+        }
+
+        SectionCard {
+            title: "FOLDER OPERATIONS";
+            icon: "📁";
+            accent: Theme.accent-cyan;
+            
+            HorizontalLayout {
+                spacing: Theme.space-md;
+                
+                ActionButton {
+                    text: "Open Folder";
+                    icon: "📁";
+                    accent: Theme.accent-cyan;
+                    clicked => { open-folder(); }
+                }
+                
+                ActionButton {
+                    text: "Open Folders";
+                    icon: "🗂";
+                    min-width: 110px;
+                    accent: Theme.accent-cyan;
+                    clicked => { open-folders(); }
+                }
+                
+                Rectangle { horizontal-stretch: 1; }
+            }
+        }
+
+        SectionCard {
+            title: "MESSAGE DIALOGS";
+            icon: "💬";
+            accent: Theme.accent-warning;
+            
+            HorizontalLayout {
+                spacing: Theme.space-md;
+                
+                ActionButton {
+                    text: "Info Box";
+                    icon: "ℹ";
+                    accent: Theme.accent-secondary;
+                    clicked => { show-msgbox(); }
+                }
+                
+                ActionButton {
+                    text: "Confirm";
+                    icon: "❓";
+                    accent: Theme.accent-warning;
+                    clicked => { show-confirm(); }
+                }
+                
+                ActionButton {
+                    text: "Yes / No";
+                    icon: "✓";
+                    accent: Theme.accent-success;
+                    clicked => { show-yesno(); }
+                }
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Output Display
+        // ─────────────────────────────────────────────────────────────────────
+        SectionCard {
+            title: "OUTPUT";
+            icon: "📋";
+            accent: Theme.accent-primary;
+            vertical-stretch: 1;
+            
+            ResultDisplay {
+                result: result-text;
+                vertical-stretch: 1;
+            }
+        }
+        }
+    }
+}

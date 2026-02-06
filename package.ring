@@ -46,6 +46,8 @@ aPackageInfo = [
 		"examples/10_temperature.slint",
 		"examples/11_custom_window.ring",
 		"examples/11_custom_window.slint",
+		"examples/12_file_dialogs.ring",
+		"examples/12_file_dialogs.slint",
 		"src/slint.ring",
 		"src/rust_src/Cargo.toml",
 		"src/rust_src/.gitignore",
