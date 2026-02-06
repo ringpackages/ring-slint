@@ -1,0 +1,643 @@
+global Theme {
+    out property <color> bg-base: #07070a;
+    out property <color> bg-surface: #0f1014;
+    out property <color> bg-elevated: #151519;
+    out property <color> bg-overlay: #1a1b23;
+    out property <color> border-subtle: #ffffff10;
+    out property <color> border-muted: #ffffff15;
+    out property <color> border-default: #ffffff20;
+    out property <color> primary: #8b5cf6;
+    out property <color> primary-muted: #8b5cf640;
+    out property <color> success: #22c55e;
+    out property <color> success-muted: #22c55e30;
+    out property <color> warning: #f59e0b;
+    out property <color> error: #ef4444;
+    out property <color> error-muted: #ef444430;
+    out property <color> text-primary: #f8fafc;
+    out property <color> text-secondary: #94a3b8;
+    out property <color> text-muted: #64748b;
+    out property <length> space-xs: 4px;
+    out property <length> space-sm: 8px;
+    out property <length> space-md: 12px;
+    out property <length> space-lg: 16px;
+    out property <length> space-xl: 24px;
+    out property <length> radius-sm: 6px;
+    out property <length> radius-md: 8px;
+    out property <length> radius-lg: 12px;
+}
+
+component IconButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> primary: false;
+    in property <bool> danger: false;
+    callback clicked;
+    
+    height: 44px;
+    min-width: 90px;
+    horizontal-stretch: 0;
+    border-radius: Theme.radius-md;
+    
+    background: danger ? (touch.pressed ? #7f1d1d : touch.has-hover ? #991b1b : Theme.error-muted) :
+                primary ? (touch.pressed ? #7c3aed : touch.has-hover ? #9366f9 : Theme.primary) :
+                (touch.pressed ? Theme.bg-overlay : touch.has-hover ? Theme.bg-elevated : Theme.bg-surface);
+    
+    border-width: (primary || danger) ? 0 : 1px;
+    border-color: Theme.border-muted;
+    
+    animate background { duration: 150ms; easing: ease-out; }
+    
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+    }
+    
+    Text {
+        text: root.text;
+        font-size: 13px;
+        font-weight: 500;
+        color: (primary || danger) ? Theme.text-primary : Theme.text-secondary;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}
+
+component StyledInput inherits Rectangle {
+    in property <string> placeholder-text: "";
+    in-out property <string> text;
+    
+    height: 44px;
+    border-radius: Theme.radius-md;
+    background: input.has-focus ? Theme.bg-elevated : Theme.bg-surface;
+    border-width: input.has-focus ? 2px : 1px;
+    border-color: input.has-focus ? Theme.primary : Theme.border-muted;
+    
+    animate border-color { duration: 150ms; easing: ease-out; }
+    animate background { duration: 150ms; easing: ease-out; }
+    
+    HorizontalLayout {
+        padding-left: Theme.space-lg;
+        padding-right: Theme.space-lg;
+        
+        input := TextInput {
+            text <=> root.text;
+            font-size: 14px;
+            color: Theme.text-primary;
+            selection-background-color: Theme.primary-muted;
+            selection-foreground-color: Theme.text-primary;
+            vertical-alignment: center;
+        }
+    }
+    
+    if input.text == "": Text {
+        x: Theme.space-lg;
+        text: placeholder-text;
+        font-size: 14px;
+        color: Theme.text-muted;
+        vertical-alignment: center;
+    }
+}
+
+component Toggle inherits Rectangle {
+    in property <string> label;
+    in-out property <bool> checked;
+    callback toggled;
+    
+    height: 32px;
+    background: transparent;
+    
+    HorizontalLayout {
+        spacing: Theme.space-md;
+        alignment: start;
+        
+        Rectangle {
+            width: 52px;
+            height: 28px;
+            border-radius: 14px;
+            background: checked ? Theme.primary : Theme.bg-overlay;
+            border-width: checked ? 0 : 1px;
+            border-color: Theme.border-default;
+            
+            animate background { duration: 200ms; easing: ease-out; }
+            
+            Rectangle {
+                x: checked ? 26px : 4px;
+                y: 4px;
+                width: 20px;
+                height: 20px;
+                border-radius: 10px;
+                background: checked ? Theme.text-primary : Theme.text-muted;
+                
+                animate x { duration: 200ms; easing: cubic-bezier(0.4, 0, 0.2, 1); }
+                animate background { duration: 200ms; easing: ease-out; }
+            }
+            
+            track-touch := TouchArea {
+                clicked => {
+                    checked = !checked;
+                    root.toggled();
+                }
+            }
+        }
+        
+        Text {
+            text: root.label;
+            font-size: 14px;
+            color: checked ? Theme.text-primary : Theme.text-secondary;
+            vertical-alignment: center;
+            
+            animate color { duration: 150ms; easing: ease-out; }
+        }
+    }
+}
+
+component Section inherits Rectangle {
+    in property <string> title;
+    
+    background: Theme.bg-surface;
+    border-radius: Theme.radius-lg;
+    border-width: 1px;
+    border-color: Theme.border-subtle;
+    clip: true;
+    
+    VerticalLayout {
+        Rectangle {
+            height: 48px;
+            background: Theme.bg-elevated;
+            
+            HorizontalLayout {
+                padding-left: Theme.space-lg;
+                padding-right: Theme.space-lg;
+                spacing: Theme.space-sm;
+                
+                Rectangle {
+                    width: 4px;
+                    height: 20px;
+                    background: Theme.primary;
+                    border-radius: 2px;
+                    y: (parent.height - self.height) / 2;
+                }
+                
+                Text {
+                    text: title;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: Theme.text-secondary;
+                    letter-spacing: 0.5px;
+                    vertical-alignment: center;
+                }
+            }
+        }
+        
+        Rectangle {
+            height: 1px;
+            background: Theme.border-subtle;
+        }
+        
+        Rectangle {
+            vertical-stretch: 1;
+            
+            VerticalLayout {
+                padding: Theme.space-lg;
+                spacing: Theme.space-md;
+                
+                @children
+            }
+        }
+    }
+}
+
+component ScrollArea inherits Rectangle {
+    in property <length> viewport-height;
+    in-out property <length> viewport-y: 0;
+
+    property <length> scroll-range: max(0px, viewport-height - root.height);
+
+    clip: true;
+    background: transparent;
+
+    TouchArea {
+        scroll-event(e) => {
+            viewport-y = clamp(viewport-y + e.delta-y * 0.5, -scroll-range, 0px);
+            accept
+        }
+    }
+
+    Rectangle {
+        y: viewport-y;
+        width: parent.width - 14px;
+        height: viewport-height;
+
+        @children
+    }
+
+    scrollbar := Rectangle {
+        x: parent.width - 8px;
+        width: 6px;
+        height: parent.height;
+        background: Theme.bg-overlay;
+        border-radius: 3px;
+
+        property <length> thumb-h: max(40px, self.height * self.height / max(1px, viewport-height));
+        property <length> thumb-range: self.height - self.thumb-h;
+
+        track-touch := TouchArea {
+            clicked => {
+                root.viewport-y = clamp(
+                    -(self.mouse-y - scrollbar.thumb-h / 2) * scroll-range / scrollbar.thumb-range,
+                    -scroll-range,
+                    0px
+                );
+            }
+        }
+
+        Rectangle {
+            width: parent.width;
+            height: scrollbar.thumb-h;
+            y: scroll-range > 0px ? -viewport-y * scrollbar.thumb-range / scroll-range : 0px;
+            background: thumb-touch.pressed ? Theme.primary : thumb-touch.has-hover ? Theme.text-muted : #404050;
+            border-radius: 3px;
+
+            thumb-touch := TouchArea {
+                moved => {
+                    if self.pressed {
+                        root.viewport-y = clamp(
+                            root.viewport-y - (self.mouse-y - self.pressed-y) * scroll-range / scrollbar.thumb-range,
+                            -scroll-range,
+                            0px
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+component StatusBar inherits Rectangle {
+    in property <string> text;
+    in property <bool> active: false;
+    
+    height: 56px;
+    border-radius: Theme.radius-lg;
+    background: active ? #0c1a14 : Theme.bg-surface;
+    border-width: 1px;
+    border-color: active ? Theme.success-muted : Theme.border-subtle;
+    
+    animate background { duration: 250ms; easing: ease-out; }
+    animate border-color { duration: 250ms; easing: ease-out; }
+    
+    HorizontalLayout {
+        padding-left: Theme.space-lg;
+        padding-right: Theme.space-lg;
+        spacing: Theme.space-md;
+        alignment: start;
+        
+        Rectangle {
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+            background: active ? Theme.success : Theme.text-muted;
+            y: (parent.height - self.height) / 2;
+            
+            animate background { duration: 250ms; easing: ease-out; }
+        }
+        
+        Text {
+            text: root.text;
+            font-size: 14px;
+            color: active ? Theme.text-secondary : Theme.text-muted;
+            vertical-alignment: center;
+            overflow: elide;
+            
+            animate color { duration: 200ms; easing: ease-out; }
+        }
+    }
+}
+
+export component DesktopFeatures inherits Window {
+    title: "Desktop Features";
+    preferred-width: 560px;
+    preferred-height: 680px;
+    background: Theme.bg-base;
+    
+    callback send-notification();
+    callback send-notification-timeout();
+    callback send-notification-icon();
+    callback send-notification-full();
+    callback copy-to-clipboard();
+    callback paste-from-clipboard();
+    callback clear-clipboard();
+    callback toggle-always-on-top();
+    callback register-hotkey();
+    callback unregister-hotkey();
+    callback unregister-all-hotkeys();
+    callback create-tray();
+    callback create-tray-icon();
+    callback set-tray-icon();
+    callback set-tray-tooltip();
+    callback destroy-tray();
+    
+    in-out property <string> clipboard-text: "";
+    in-out property <string> status-text: "Ready";
+    in-out property <bool> is-on-top: false;
+    in-out property <bool> tray-active: false;
+    
+    VerticalLayout {
+        padding: Theme.space-xl;
+        spacing: Theme.space-lg;
+        
+        HorizontalLayout {
+            height: 52px;
+            spacing: Theme.space-lg;
+            
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px;
+                
+                Text {
+                    text: "Desktop Features";
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: Theme.text-primary;
+                }
+                
+                Text {
+                    text: "System integration and native capabilities";
+                    font-size: 13px;
+                    color: Theme.text-muted;
+                }
+            }
+            
+            Rectangle { horizontal-stretch: 1; }
+            
+            if tray-active: Rectangle {
+                width: 120px;
+                height: 36px;
+                border-radius: Theme.radius-md;
+                background: @linear-gradient(135deg, #0d2818 0%, #0a1f14 100%);
+                border-width: 1px;
+                border-color: Theme.success.with-alpha(0.4);
+                
+                drop-shadow-blur: 12px;
+                drop-shadow-color: Theme.success.with-alpha(0.25);
+                
+                Rectangle {
+                    x: 12px;
+                    y: (parent.height - 8px) / 2;
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 4px;
+                    background: Theme.success;
+                    
+                    Rectangle {
+                        x: -4px;
+                        y: -4px;
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 8px;
+                        background: Theme.success.with-alpha(0.3);
+                    }
+                }
+                
+                Text {
+                    x: 28px;
+                    text: "Tray Active";
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: Theme.success;
+                    vertical-alignment: center;
+                }
+            }
+        }
+        
+        ScrollArea {
+            vertical-stretch: 1;
+            viewport-height: content.preferred-height;
+            
+            content := VerticalLayout {
+                spacing: Theme.space-lg;
+                
+                Section {
+                    title: "NOTIFICATIONS";
+                    
+                    HorizontalLayout {
+                        spacing: Theme.space-sm;
+                        
+                        IconButton {
+                            text: "Basic";
+                            clicked => { send-notification(); }
+                        }
+                        
+                        IconButton {
+                            text: "Timeout";
+                            clicked => { send-notification-timeout(); }
+                        }
+                        
+                        IconButton {
+                            text: "With Icon";
+                            clicked => { send-notification-icon(); }
+                        }
+                        
+                        IconButton {
+                            text: "Full";
+                            primary: true;
+                            clicked => { send-notification-full(); }
+                        }
+                    }
+                }
+                
+                Section {
+                    title: "CLIPBOARD";
+                    
+                    StyledInput {
+                        placeholder-text: "Enter text to copy...";
+                        text <=> clipboard-text;
+                    }
+                    
+                    HorizontalLayout {
+                        spacing: Theme.space-sm;
+                        
+                        IconButton {
+                            text: "Copy";
+                            primary: true;
+                            clicked => { copy-to-clipboard(); }
+                        }
+                        
+                        IconButton {
+                            text: "Paste";
+                            clicked => { paste-from-clipboard(); }
+                        }
+                        
+                        IconButton {
+                            text: "Clear";
+                            danger: true;
+                            clicked => { clear-clipboard(); }
+                        }
+                    }
+                }
+                
+                Section {
+                    title: "WINDOW";
+                    
+                    Toggle {
+                        label: "Always on Top";
+                        checked <=> is-on-top;
+                        toggled => { toggle-always-on-top(); }
+                    }
+                }
+                
+                Section {
+                    title: "GLOBAL HOTKEYS";
+                    
+                    Rectangle {
+                        height: 36px;
+                        background: Theme.bg-overlay;
+                        border-radius: Theme.radius-sm;
+                        
+                        HorizontalLayout {
+                            padding-left: Theme.space-md;
+                            padding-right: Theme.space-md;
+                            spacing: Theme.space-sm;
+                            
+                            Text {
+                                text: "Shortcut:";
+                                font-size: 12px;
+                                color: Theme.text-muted;
+                                vertical-alignment: center;
+                            }
+                            
+                            Rectangle {
+                                width: 32px;
+                                height: 24px;
+                                background: Theme.bg-surface;
+                                border-radius: 4px;
+                                border-width: 1px;
+                                border-color: Theme.border-muted;
+                                
+                                Text {
+                                    text: "Ctrl";
+                                    font-size: 10px;
+                                    font-weight: 600;
+                                    color: Theme.text-secondary;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            
+                            Text {
+                                text: "+";
+                                font-size: 12px;
+                                color: Theme.text-muted;
+                                vertical-alignment: center;
+                            }
+                            
+                            Rectangle {
+                                width: 38px;
+                                height: 24px;
+                                background: Theme.bg-surface;
+                                border-radius: 4px;
+                                border-width: 1px;
+                                border-color: Theme.border-muted;
+                                
+                                Text {
+                                    text: "Shift";
+                                    font-size: 10px;
+                                    font-weight: 600;
+                                    color: Theme.text-secondary;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            
+                            Text {
+                                text: "+";
+                                font-size: 12px;
+                                color: Theme.text-muted;
+                                vertical-alignment: center;
+                            }
+                            
+                            Rectangle {
+                                width: 24px;
+                                height: 24px;
+                                background: Theme.primary-muted;
+                                border-radius: 4px;
+                                
+                                Text {
+                                    text: "H";
+                                    font-size: 11px;
+                                    font-weight: 700;
+                                    color: Theme.primary;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+                    }
+                    
+                    HorizontalLayout {
+                        spacing: Theme.space-sm;
+                        
+                        IconButton {
+                            text: "Register";
+                            primary: true;
+                            clicked => { register-hotkey(); }
+                        }
+                        
+                        IconButton {
+                            text: "Unregister";
+                            clicked => { unregister-hotkey(); }
+                        }
+                        
+                        IconButton {
+                            text: "Clear All";
+                            danger: true;
+                            clicked => { unregister-all-hotkeys(); }
+                        }
+                    }
+                }
+                
+                Section {
+                    title: "SYSTEM TRAY";
+                    
+                    HorizontalLayout {
+                        spacing: Theme.space-sm;
+                        
+                        IconButton {
+                            text: "Create";
+                            primary: true;
+                            clicked => { create-tray(); }
+                        }
+                        
+                        IconButton {
+                            text: "With Icon";
+                            clicked => { create-tray-icon(); }
+                        }
+                        
+                        IconButton {
+                            text: "Set Icon";
+                            clicked => { set-tray-icon(); }
+                        }
+                    }
+                    
+                    HorizontalLayout {
+                        spacing: Theme.space-sm;
+                        
+                        IconButton {
+                            text: "Set Tooltip";
+                            clicked => { set-tray-tooltip(); }
+                        }
+                        
+                        IconButton {
+                            text: "Destroy";
+                            danger: true;
+                            clicked => { destroy-tray(); }
+                        }
+                    }
+                }
+                
+                StatusBar {
+                    text: status-text;
+                    active: status-text != "Ready" && status-text != "";
+                }
+            }
+        }
+    }
+}
