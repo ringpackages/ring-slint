@@ -1,0 +1,984 @@
+global Theme {
+    out property <color> bg-base: #07070a;
+    out property <color> bg-surface: #0f1014;
+    out property <color> bg-elevated: #151519;
+    out property <color> bg-overlay: #1a1b23;
+    out property <color> border-subtle: #ffffff10;
+    out property <color> border-muted: #ffffff15;
+    out property <color> border-default: #ffffff20;
+    out property <color> primary: #8b5cf6;
+    out property <color> primary-muted: #8b5cf640;
+    out property <color> success: #22c55e;
+    out property <color> text-primary: #f8fafc;
+    out property <color> text-secondary: #94a3b8;
+    out property <color> text-muted: #64748b;
+    out property <length> space-xs: 4px;
+    out property <length> space-sm: 8px;
+    out property <length> space-md: 12px;
+    out property <length> space-lg: 16px;
+    out property <length> space-xl: 24px;
+    out property <length> radius-sm: 6px;
+    out property <length> radius-md: 8px;
+    out property <length> radius-lg: 12px;
+}
+
+component TabButton inherits Rectangle {
+    in property <string> text;
+    in property <string> icon: "";
+    in property <bool> selected: false;
+    callback clicked();
+
+    height: 40px;
+    min-width: 110px;
+    horizontal-stretch: 0;
+    background: selected 
+        ? @linear-gradient(135deg, Theme.primary 0%, Theme.primary.darker(0.15) 100%)
+        : touch.pressed 
+            ? Theme.bg-overlay 
+            : touch.has-hover 
+                ? Theme.bg-elevated 
+                : transparent;
+    border-radius: Theme.radius-md;
+    border-width: selected ? 0 : 1px;
+    border-color: touch.has-hover ? Theme.border-default : transparent;
+    
+    drop-shadow-blur: selected ? 12px : 0px;
+    drop-shadow-color: selected ? Theme.primary.with-alpha(0.4) : transparent;
+    
+    animate background { duration: 150ms; easing: ease-out; }
+    animate border-color { duration: 150ms; easing: ease-out; }
+    animate drop-shadow-blur { duration: 200ms; easing: ease-out; }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+
+    HorizontalLayout {
+        alignment: center;
+        spacing: Theme.space-xs;
+        padding-left: Theme.space-md;
+        padding-right: Theme.space-md;
+        
+        if icon != "" : Text {
+            text: icon;
+            font-size: 14px;
+            vertical-alignment: center;
+        }
+        
+        Text {
+            text: root.text;
+            color: selected ? white : touch.has-hover ? Theme.text-primary : Theme.text-secondary;
+            font-size: 13px;
+            font-weight: selected ? 600 : 500;
+            vertical-alignment: center;
+            
+            animate color { duration: 150ms; easing: ease-out; }
+        }
+    }
+    
+    Rectangle {
+        y: parent.height - 3px;
+        x: (parent.width - self.width) / 2;
+        width: selected ? parent.width - 16px : 0px;
+        height: 2px;
+        background: white.with-alpha(0.5);
+        border-radius: 1px;
+        
+        animate width { duration: 200ms; easing: ease-out; }
+    }
+}
+
+component Section inherits Rectangle {
+    in property <string> title;
+    
+    background: Theme.bg-surface;
+    border-radius: Theme.radius-lg;
+    border-width: 1px;
+    border-color: Theme.border-subtle;
+
+    VerticalLayout {
+        padding: Theme.space-lg;
+        spacing: Theme.space-md;
+
+        HorizontalLayout {
+            spacing: Theme.space-sm;
+            
+            Rectangle {
+                width: 4px;
+                height: 20px;
+                background: Theme.primary;
+                border-radius: 2px;
+            }
+            
+            Text {
+                text: title;
+                color: Theme.text-primary;
+                font-size: 16px;
+                font-weight: 600;
+                vertical-alignment: center;
+            }
+        }
+
+        @children
+    }
+}
+
+component FontSample inherits Rectangle {
+    in property <string> label;
+    in property <string> sample-text: "The quick brown fox jumps over the lazy dog";
+    in property <string> font-name: "sans-serif";
+    in property <int> font-size: 16;
+    in property <int> font-weight: 400;
+    in property <bool> italic: false;
+
+    height: max(68px, font-size * 1px + 48px);
+    background: Theme.bg-elevated;
+    border-radius: Theme.radius-md;
+    border-width: 1px;
+    border-color: Theme.border-subtle;
+
+    VerticalLayout {
+        padding: Theme.space-md;
+        padding-left: Theme.space-lg;
+        spacing: Theme.space-xs;
+
+        Text {
+            text: label;
+            color: Theme.text-muted;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        Text {
+            text: sample-text;
+            color: Theme.text-primary;
+            font-family: font-name;
+            font-size: font-size * 1px;
+            font-weight: font-weight;
+            font-italic: italic;
+            overflow: elide;
+        }
+    }
+}
+
+component LanguageSample inherits Rectangle {
+    in property <string> language;
+    in property <string> sample-text;
+    in property <string> translation;
+
+    height: 76px;
+    background: Theme.bg-elevated;
+    border-radius: Theme.radius-md;
+    border-width: 1px;
+    border-color: Theme.border-subtle;
+
+    VerticalLayout {
+        padding: Theme.space-md;
+        padding-left: Theme.space-lg;
+        spacing: Theme.space-xs;
+
+        HorizontalLayout {
+            spacing: Theme.space-md;
+            
+            Rectangle {
+                width: 70px;
+                height: 22px;
+                background: Theme.primary-muted;
+                border-radius: Theme.radius-sm;
+                
+                Text {
+                    text: language;
+                    color: Theme.primary;
+                    font-size: 11px;
+                    font-weight: 600;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+            Text {
+                text: translation;
+                color: Theme.text-muted;
+                font-size: 11px;
+                vertical-alignment: center;
+            }
+        }
+
+        Text {
+            text: sample-text;
+            color: Theme.text-primary;
+            font-size: 16px;
+            overflow: elide;
+        }
+    }
+}
+
+component ScrollArea inherits Rectangle {
+    in property <length> viewport-height;
+    in-out property <length> viewport-y: 0;
+
+    property <length> scroll-range: viewport-height - root.height;
+
+    clip: true;
+    background: transparent;
+
+    TouchArea {
+        width: parent.width - 14px;
+        height: parent.height;
+
+        scroll-event(e) => {
+            viewport-y = clamp(viewport-y + e.delta-y * 0.5, -scroll-range, 0px);
+            accept
+        }
+    }
+
+    Rectangle {
+        y: viewport-y;
+        width: parent.width - 14px;
+        height: viewport-height;
+
+        @children
+    }
+
+    scrollbar := Rectangle {
+        x: parent.width - 8px;
+        width: 6px;
+        height: parent.height;
+        background: Theme.bg-overlay;
+        border-radius: 3px;
+
+        property <length> thumb-h: max(40px, self.height * self.height / max(1px, viewport-height));
+        property <length> thumb-range: self.height - self.thumb-h;
+
+        track-touch := TouchArea {
+            clicked => {
+                root.viewport-y = clamp(
+                    -(self.mouse-y - scrollbar.thumb-h / 2) * scroll-range / scrollbar.thumb-range,
+                    -scroll-range,
+                    0px
+                );
+            }
+        }
+
+        Rectangle {
+            width: parent.width;
+            height: scrollbar.thumb-h;
+            y: scroll-range > 0px ? -viewport-y * scrollbar.thumb-range / scroll-range : 0px;
+            background: thumb-touch.pressed ? Theme.text-secondary : thumb-touch.has-hover ? Theme.text-muted : #404050;
+            border-radius: 3px;
+            
+            animate background { duration: 150ms; easing: ease-out; }
+
+            thumb-touch := TouchArea {
+                moved => {
+                    if self.pressed {
+                        root.viewport-y = clamp(
+                            root.viewport-y - (self.mouse-y - self.pressed-y) * scroll-range / scrollbar.thumb-range,
+                            -scroll-range,
+                            0px
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component App inherits Window {
+    title: "Font Showcase";
+    background: Theme.bg-base;
+    preferred-width: 860px;
+    preferred-height: 720px;
+
+    in-out property <int> current-tab: 0;
+
+    callback tab-changed(int);
+
+    VerticalLayout {
+        padding: Theme.space-xl;
+        spacing: Theme.space-lg;
+
+        HorizontalLayout {
+            height: 48px;
+            spacing: Theme.space-lg;
+            
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px;
+                
+                Text {
+                    text: "Font & Typography Showcase";
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: Theme.text-primary;
+                }
+                
+                Text {
+                    text: "Explore fonts, weights, sizes, and Unicode support";
+                    font-size: 13px;
+                    color: Theme.text-muted;
+                }
+            }
+        }
+
+        Rectangle {
+            height: 52px;
+            background: Theme.bg-surface;
+            border-radius: Theme.radius-lg;
+            border-width: 1px;
+            border-color: Theme.border-subtle;
+            
+            HorizontalLayout {
+                padding: Theme.space-xs;
+                spacing: Theme.space-xs;
+                alignment: center;
+
+                TabButton {
+                    text: "Families";
+                    icon: "🔤";
+                    selected: current-tab == 0;
+                    clicked => { tab-changed(0); }
+                }
+
+                TabButton {
+                    text: "Weights";
+                    icon: "𝐁";
+                    selected: current-tab == 1;
+                    clicked => { tab-changed(1); }
+                }
+
+                TabButton {
+                    text: "Sizes";
+                    icon: "📏";
+                    selected: current-tab == 2;
+                    clicked => { tab-changed(2); }
+                }
+
+                TabButton {
+                    text: "Unicode";
+                    icon: "🌍";
+                    selected: current-tab == 3;
+                    clicked => { tab-changed(3); }
+                }
+
+                TabButton {
+                    text: "Special";
+                    icon: "✨";
+                    selected: current-tab == 4;
+                    clicked => { tab-changed(4); }
+                }
+            }
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+            background: transparent;
+
+            ScrollArea {
+                visible: current-tab == 0;
+                viewport-height: tab0-content.preferred-height;
+
+                tab0-content := VerticalLayout {
+                    spacing: Theme.space-lg;
+
+                    Section {
+                        title: "System Fonts";
+
+                        FontSample {
+                            label: "Sans-Serif (Default)";
+                            font-name: "sans-serif";
+                        }
+
+                        FontSample {
+                            label: "Serif";
+                            font-name: "serif";
+                        }
+
+                        FontSample {
+                            label: "Monospace";
+                            font-name: "monospace";
+                            sample-text: "fn main() { println!(\"Hello, World!\"); }";
+                        }
+
+                        FontSample {
+                            label: "Cursive";
+                            font-name: "cursive";
+                        }
+
+                        FontSample {
+                            label: "Fantasy";
+                            font-name: "fantasy";
+                        }
+                    }
+
+                    Section {
+                        title: "Common Fonts";
+
+                        FontSample {
+                            label: "Arial";
+                            font-name: "Arial";
+                        }
+
+                        FontSample {
+                            label: "Helvetica";
+                            font-name: "Helvetica";
+                        }
+
+                        FontSample {
+                            label: "Times New Roman";
+                            font-name: "Times New Roman";
+                        }
+
+                        FontSample {
+                            label: "Verdana";
+                            font-name: "Verdana";
+                        }
+
+                        FontSample {
+                            label: "Courier New";
+                            font-name: "Courier New";
+                            sample-text: "const x = 42; // Monospace code";
+                        }
+                    }
+
+                    Section {
+                        title: "Linux / Open Source Fonts";
+
+                        FontSample {
+                            label: "DejaVu Sans";
+                            font-name: "DejaVu Sans";
+                        }
+
+                        FontSample {
+                            label: "Noto Sans";
+                            font-name: "Noto Sans";
+                        }
+
+                        FontSample {
+                            label: "Ubuntu";
+                            font-name: "Ubuntu";
+                        }
+
+                        FontSample {
+                            label: "Roboto";
+                            font-name: "Roboto";
+                        }
+                    }
+                }
+            }
+
+            ScrollArea {
+                visible: current-tab == 1;
+                viewport-height: tab1-content.preferred-height;
+
+                tab1-content := VerticalLayout {
+                    spacing: Theme.space-lg;
+
+                    Section {
+                        title: "Font Weights";
+
+                        FontSample {
+                            label: "Thin (100)";
+                            font-weight: 100;
+                            sample-text: "Thin weight text - very light";
+                        }
+
+                        FontSample {
+                            label: "Extra Light (200)";
+                            font-weight: 200;
+                            sample-text: "Extra light weight text";
+                        }
+
+                        FontSample {
+                            label: "Light (300)";
+                            font-weight: 300;
+                            sample-text: "Light weight text";
+                        }
+
+                        FontSample {
+                            label: "Regular (400)";
+                            font-weight: 400;
+                            sample-text: "Regular weight text - default";
+                        }
+
+                        FontSample {
+                            label: "Medium (500)";
+                            font-weight: 500;
+                            sample-text: "Medium weight text";
+                        }
+
+                        FontSample {
+                            label: "Semi Bold (600)";
+                            font-weight: 600;
+                            sample-text: "Semi bold weight text";
+                        }
+
+                        FontSample {
+                            label: "Bold (700)";
+                            font-weight: 700;
+                            sample-text: "Bold weight text - strong emphasis";
+                        }
+
+                        FontSample {
+                            label: "Extra Bold (800)";
+                            font-weight: 800;
+                            sample-text: "Extra bold weight text";
+                        }
+
+                        FontSample {
+                            label: "Black (900)";
+                            font-weight: 900;
+                            sample-text: "Black weight text - heaviest";
+                        }
+                    }
+
+                    Section {
+                        title: "Font Styles";
+
+                        FontSample {
+                            label: "Normal";
+                            sample-text: "Normal style text - upright";
+                        }
+
+                        FontSample {
+                            label: "Italic";
+                            italic: true;
+                            sample-text: "Italic style text - slanted for emphasis";
+                        }
+
+                        FontSample {
+                            label: "Bold + Italic";
+                            font-weight: 700;
+                            italic: true;
+                            sample-text: "Bold italic - combined styles";
+                        }
+                    }
+                }
+            }
+
+            ScrollArea {
+                visible: current-tab == 2;
+                viewport-height: tab2-content.preferred-height;
+
+                tab2-content := VerticalLayout {
+                    spacing: Theme.space-lg;
+
+                    Section {
+                        title: "Font Size Scale";
+
+                        FontSample {
+                            label: "8px - Tiny";
+                            font-size: 8;
+                            sample-text: "Very small text, hard to read";
+                        }
+
+                        FontSample {
+                            label: "10px - Small";
+                            font-size: 10;
+                            sample-text: "Small text for captions and footnotes";
+                        }
+
+                        FontSample {
+                            label: "12px - Caption";
+                            font-size: 12;
+                            sample-text: "Caption size text, common for labels";
+                        }
+
+                        FontSample {
+                            label: "14px - Body Small";
+                            font-size: 14;
+                            sample-text: "Smaller body text, good for dense content";
+                        }
+
+                        FontSample {
+                            label: "16px - Body (Default)";
+                            font-size: 16;
+                            sample-text: "Default body text size, optimal readability";
+                        }
+
+                        FontSample {
+                            label: "18px - Body Large";
+                            font-size: 18;
+                            sample-text: "Larger body text for improved readability";
+                        }
+
+                        FontSample {
+                            label: "20px - Subheading";
+                            font-size: 20;
+                            sample-text: "Subheading size";
+                        }
+
+                        FontSample {
+                            label: "24px - Heading 3";
+                            font-size: 24;
+                            sample-text: "Heading level 3";
+                            font-weight: 600;
+                        }
+
+                        FontSample {
+                            label: "32px - Heading 2";
+                            font-size: 32;
+                            sample-text: "Heading level 2";
+                            font-weight: 700;
+                        }
+
+                        FontSample {
+                            label: "48px - Heading 1";
+                            font-size: 48;
+                            sample-text: "Large Title";
+                            font-weight: 700;
+                        }
+                    }
+                }
+            }
+
+            ScrollArea {
+                visible: current-tab == 3;
+                viewport-height: tab3-content.preferred-height;
+
+                tab3-content := VerticalLayout {
+                    spacing: Theme.space-lg;
+
+                    Section {
+                        title: "Latin Scripts";
+
+                        LanguageSample {
+                            language: "English";
+                            sample-text: "The quick brown fox jumps over the lazy dog.";
+                            translation: "Pangram";
+                        }
+
+                        LanguageSample {
+                            language: "Spanish";
+                            sample-text: "El veloz murcielago hindu comia feliz cardillo y kiwi.";
+                            translation: "The swift Hindu bat happily ate thistle and kiwi";
+                        }
+
+                        LanguageSample {
+                            language: "French";
+                            sample-text: "Portez ce vieux whisky au juge blond qui fume.";
+                            translation: "Bring this old whisky to the blond judge who smokes";
+                        }
+
+                        LanguageSample {
+                            language: "German";
+                            sample-text: "Zwolf Boxkampfer jagen Viktor quer uber den grossen Sylter Deich.";
+                            translation: "Twelve boxers chase Viktor across the great Sylt dike";
+                        }
+                    }
+
+                    Section {
+                        title: "RTL Scripts (Right-to-Left)";
+
+                        LanguageSample {
+                            language: "Arabic";
+                            sample-text: "صِف خَلقَ خَودِ كَمِثلِ الشَمسِ إِذ بَزَغَت يَحظى الضَجيعُ بِها نَجلاءَ مِعطارِ";
+                            translation: "Describe the creation of a beauty like the sun when it rises";
+                        }
+
+                        LanguageSample {
+                            language: "Hebrew";
+                            sample-text: "דג סקרן שט בים מאוכזב ולפתע מצא חברה";
+                            translation: "A curious fish swam in the sea disappointed and suddenly found a friend";
+                        }
+
+                        LanguageSample {
+                            language: "Persian";
+                            sample-text: "چه بسا آرزوهایی که در دل پرورانده‌ایم و به آنها نرسیده‌ایم";
+                            translation: "How many wishes we have nurtured in our hearts and not reached them";
+                        }
+                    }
+
+                    Section {
+                        title: "CJK (Chinese, Japanese, Korean)";
+
+                        LanguageSample {
+                            language: "Chinese";
+                            sample-text: "天地玄黄，宇宙洪荒。日月盈昃，辰宿列张。";
+                            translation: "Heaven and earth are dark yellow, the universe is vast";
+                        }
+
+                        LanguageSample {
+                            language: "Japanese";
+                            sample-text: "いろはにほへと ちりぬるを わかよたれそ つねならむ";
+                            translation: "Iroha poem - Japanese pangram";
+                        }
+
+                        LanguageSample {
+                            language: "Korean";
+                            sample-text: "키스의 고유조건은 입술끼리 만나는 것";
+                            translation: "The unique condition of a kiss is that lips touch";
+                        }
+                    }
+
+                    Section {
+                        title: "Indic Scripts";
+
+                        LanguageSample {
+                            language: "Hindi";
+                            sample-text: "ऋषियों को सताने वाले दुष्ट राक्षसों के राजा रावण का सर्वनाश करने वाले";
+                            translation: "Lord Rama, destroyer of the demon king Ravana";
+                        }
+
+                        LanguageSample {
+                            language: "Bengali";
+                            sample-text: "আমি বাংলায় গান গাই, আমি বাংলার গান গাই";
+                            translation: "I sing in Bengali, I sing Bengali songs";
+                        }
+
+                        LanguageSample {
+                            language: "Tamil";
+                            sample-text: "தமிழ் மொழி உலகின் மிகப் பழமையான மொழிகளில் ஒன்று";
+                            translation: "Tamil is one of the oldest languages in the world";
+                        }
+
+                        LanguageSample {
+                            language: "Thai";
+                            sample-text: "เป็นมนุษย์สุดประเสริฐเลิศคุณค่า กว่าบรรดาฝูงสัตว์เดรัจฉาน";
+                            translation: "Being human is the most precious, superior to all animals";
+                        }
+                    }
+
+                    Section {
+                        title: "Cyrillic & Greek";
+
+                        LanguageSample {
+                            language: "Russian";
+                            sample-text: "Съешь ещё этих мягких французских булок, да выпей чаю.";
+                            translation: "Eat more of these soft French rolls and drink tea";
+                        }
+
+                        LanguageSample {
+                            language: "Greek";
+                            sample-text: "Ξεσκεπάζω την ψυχοφθόρα βδελυγμία.";
+                            translation: "I uncover the soul-destroying abomination";
+                        }
+                    }
+                }
+            }
+
+            ScrollArea {
+                visible: current-tab == 4;
+                viewport-height: tab4-content.preferred-height;
+
+                tab4-content := VerticalLayout {
+                    spacing: Theme.space-lg;
+
+                    Section {
+                        title: "Emoji";
+
+                        Rectangle {
+                            height: 72px;
+                            background: Theme.bg-elevated;
+                            border-radius: Theme.radius-md;
+                            border-width: 1px;
+                            border-color: Theme.border-subtle;
+
+                            Text {
+                                x: Theme.space-lg;
+                                text: "😀 😃 😄 😁 😆 😅 🤣 😂 🙂 😊 😇 🥰 😍 🤩 😘 😗 😚 😋 😛 😜 🤪 😝";
+                                color: Theme.text-primary;
+                                font-size: 22px;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        Rectangle {
+                            height: 72px;
+                            background: Theme.bg-elevated;
+                            border-radius: Theme.radius-md;
+                            border-width: 1px;
+                            border-color: Theme.border-subtle;
+
+                            Text {
+                                x: Theme.space-lg;
+                                text: "❤️ 🧡 💛 💚 💙 💜 🖤 🤍 🤎 💔 ❤️‍🔥 ❤️‍🩹 💕 💞 💓 💗 💖 💘 💝";
+                                color: Theme.text-primary;
+                                font-size: 22px;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        Rectangle {
+                            height: 72px;
+                            background: Theme.bg-elevated;
+                            border-radius: Theme.radius-md;
+                            border-width: 1px;
+                            border-color: Theme.border-subtle;
+
+                            Text {
+                                x: Theme.space-lg;
+                                text: "🌍 🌎 🌏 🌐 🗺️ 🧭 🏔️ ⛰️ 🌋 🗻 🏕️ 🏖️ 🏜️ 🏝️ 🏞️ 🌅 🌄 🌠 🎇 🎆";
+                                color: Theme.text-primary;
+                                font-size: 22px;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    Section {
+                        title: "Mathematical Symbols";
+
+                        Rectangle {
+                            height: 56px;
+                            background: Theme.bg-elevated;
+                            border-radius: Theme.radius-md;
+                            border-width: 1px;
+                            border-color: Theme.border-subtle;
+
+                            Text {
+                                x: Theme.space-lg;
+                                text: "∀ ∂ ∃ ∅ ∇ ∈ ∉ ∋ ∏ ∑ − ∗ √ ∝ ∞ ∠ ∧ ∨ ∩ ∪ ∫ ∴ ∼ ≅ ≈ ≠ ≡ ≤ ≥ ⊂ ⊃ ⊆ ⊇";
+                                color: Theme.text-primary;
+                                font-size: 18px;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        Rectangle {
+                            height: 56px;
+                            background: Theme.bg-elevated;
+                            border-radius: Theme.radius-md;
+                            border-width: 1px;
+                            border-color: Theme.border-subtle;
+
+                            Text {
+                                x: Theme.space-lg;
+                                text: "α β γ δ ε ζ η θ ι κ λ μ ν ξ ο π ρ σ τ υ φ χ ψ ω Σ Π Ω";
+                                color: Theme.text-primary;
+                                font-size: 18px;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    Section {
+                        title: "Currency Symbols";
+
+                        Rectangle {
+                            height: 56px;
+                            background: Theme.bg-elevated;
+                            border-radius: Theme.radius-md;
+                            border-width: 1px;
+                            border-color: Theme.border-subtle;
+
+                            Text {
+                                x: Theme.space-lg;
+                                text: "$ € £ ¥ ₹ ₽ ₿ ¢ ₩ ₪ ₫ ₴ ₦ ₱ ₡ ₲ ₵ ₸ ₺ ₼ ₾ ฿ ﷼";
+                                color: Theme.success;
+                                font-size: 22px;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    Section {
+                        title: "Arrows & Shapes";
+
+                        Rectangle {
+                            height: 56px;
+                            background: Theme.bg-elevated;
+                            border-radius: Theme.radius-md;
+                            border-width: 1px;
+                            border-color: Theme.border-subtle;
+
+                            Text {
+                                x: Theme.space-lg;
+                                text: "← → ↑ ↓ ↔ ↕ ⇐ ⇒ ⇑ ⇓ ⇔ ⇕ ➤ ➜ ➡ ⬅ ⬆ ⬇ ↩ ↪ ⤴ ⤵";
+                                color: Theme.text-primary;
+                                font-size: 18px;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        Rectangle {
+                            height: 56px;
+                            background: Theme.bg-elevated;
+                            border-radius: Theme.radius-md;
+                            border-width: 1px;
+                            border-color: Theme.border-subtle;
+
+                            Text {
+                                x: Theme.space-lg;
+                                text: "■ □ ▢ ▣ ▤ ▥ ▦ ▧ ▨ ▩ ▪ ▫ ▬ ▭ ▮ ▯ ▰ ▱ ▲ △ ▴ ▵ ▶ ▷ ▸ ▹ ► ▻";
+                                color: Theme.text-primary;
+                                font-size: 18px;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        Rectangle {
+                            height: 56px;
+                            background: Theme.bg-elevated;
+                            border-radius: Theme.radius-md;
+                            border-width: 1px;
+                            border-color: Theme.border-subtle;
+
+                            Text {
+                                x: Theme.space-lg;
+                                text: "● ○ ◐ ◑ ◒ ◓ ◔ ◕ ◖ ◗ ◘ ◙ ◚ ◛ ◜ ◝ ◞ ◟ ◠ ◡ ◢ ◣ ◤ ◥ ◦ ◧ ◨ ◩ ◪ ◫";
+                                color: Theme.text-primary;
+                                font-size: 18px;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    Section {
+                        title: "Box Drawing & Music";
+
+                        Rectangle {
+                            height: 88px;
+                            background: Theme.bg-elevated;
+                            border-radius: Theme.radius-md;
+                            border-width: 1px;
+                            border-color: Theme.border-subtle;
+
+                            Text {
+                                x: Theme.space-lg;
+                                text: "┌─┬─┐  ╔═╦═╗  ┏━┳━┓\n│ │ │  ║ ║ ║  ┃ ┃ ┃\n├─┼─┤  ╠═╬═╣  ┣━╋━┫\n└─┴─┘  ╚═╩═╝  ┗━┻━┛";
+                                color: Theme.primary;
+                                font-size: 13px;
+                                font-family: "monospace";
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        Rectangle {
+                            height: 56px;
+                            background: Theme.bg-elevated;
+                            border-radius: Theme.radius-md;
+                            border-width: 1px;
+                            border-color: Theme.border-subtle;
+
+                            Text {
+                                x: Theme.space-lg;
+                                text: "♩ ♪ ♫ ♬ ♭ ♮ ♯ 𝄞 𝄢 𝅗𝅥 𝅘𝅥 𝅘𝅥𝅮 𝅘𝅥𝅯 𝅘𝅥𝅰";
+                                color: Theme.text-primary;
+                                font-size: 22px;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            height: 36px;
+            background: Theme.bg-surface;
+            border-radius: Theme.radius-md;
+            border-width: 1px;
+            border-color: Theme.border-subtle;
+
+            Text {
+                text: "Font rendering depends on installed system fonts. Use Noto fonts for best Unicode coverage.";
+                color: Theme.text-muted;
+                font-size: 11px;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+    }
+}
