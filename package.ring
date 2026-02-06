@@ -48,6 +48,8 @@ aPackageInfo = [
 		"examples/11_custom_window.slint",
 		"examples/12_file_dialogs.ring",
 		"examples/12_file_dialogs.slint",
+		"examples/13_window_management.ring",
+		"examples/13_window_management.slint",
 		"src/slint.ring",
 		"src/rust_src/Cargo.toml",
 		"src/rust_src/.gitignore",

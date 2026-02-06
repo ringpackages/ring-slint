@@ -1,0 +1,578 @@
+global Theme {
+    // Backgrounds
+    out property <color> bg-base: #07070a;
+    out property <color> bg-surface: #0f1014;
+    out property <color> bg-elevated: #151519;
+    out property <color> bg-overlay: #1a1b23;
+    
+    // Borders
+    out property <color> border-subtle: #ffffff10;
+    out property <color> border-muted: #ffffff15;
+    out property <color> border-default: #ffffff20;
+    
+    // Accent
+    out property <color> primary: #8b5cf6;
+    out property <color> primary-muted: #8b5cf640;
+    out property <color> success: #22c55e;
+    out property <color> warning: #f59e0b;
+    out property <color> error: #ef4444;
+    
+    // Text
+    out property <color> text-primary: #f8fafc;
+    out property <color> text-secondary: #94a3b8;
+    out property <color> text-muted: #64748b;
+    
+    // Spacing
+    out property <length> space-xs: 4px;
+    out property <length> space-sm: 8px;
+    out property <length> space-md: 12px;
+    out property <length> space-lg: 16px;
+    out property <length> space-xl: 24px;
+    
+    // Radius
+    out property <length> radius-sm: 6px;
+    out property <length> radius-md: 8px;
+    out property <length> radius-lg: 12px;
+}
+
+component Button inherits Rectangle {
+    in property <string> text;
+    in property <bool> primary: false;
+    callback clicked();
+
+    height: 44px;
+    min-width: 90px;
+    horizontal-stretch: 0;
+    background: primary ? (touch.pressed ? #7c3aed : touch.has-hover ? #9366f9 : Theme.primary) :
+                (touch.pressed ? Theme.bg-overlay : touch.has-hover ? Theme.bg-elevated : Theme.bg-surface);
+    border-radius: Theme.radius-md;
+    border-width: primary ? 0 : 1px;
+    border-color: Theme.border-muted;
+
+    animate background { duration: 150ms; easing: ease-out; }
+
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+    }
+
+    Text {
+        text: root.text;
+        color: primary ? Theme.text-primary : Theme.text-secondary;
+        font-size: 13px;
+        font-weight: 500;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}
+
+component SpinBox inherits Rectangle {
+    in-out property <int> value;
+    in property <int> minimum: 0;
+    in property <int> maximum: 9999;
+
+    width: 120px;
+    height: 44px;
+    background: Theme.bg-surface;
+    border-radius: Theme.radius-md;
+    border-width: 1px;
+    border-color: Theme.border-muted;
+
+    HorizontalLayout {
+        padding: Theme.space-xs;
+        spacing: 2px;
+
+        // Decrement button
+        Rectangle {
+            width: 36px;
+            border-radius: Theme.radius-sm;
+            background: dec-touch.pressed ? Theme.bg-overlay : dec-touch.has-hover ? Theme.bg-elevated : transparent;
+            
+            animate background { duration: 100ms; easing: ease-out; }
+
+            dec-touch := TouchArea {
+                clicked => { value = max(minimum, value - 1); }
+            }
+
+            Text {
+                text: "-";
+                font-size: 18px;
+                font-weight: 500;
+                color: Theme.primary;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        // Value display
+        Rectangle {
+            horizontal-stretch: 1;
+
+            Text {
+                text: value;
+                font-size: 14px;
+                font-weight: 600;
+                color: Theme.text-primary;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        // Increment button
+        Rectangle {
+            width: 36px;
+            border-radius: Theme.radius-sm;
+            background: inc-touch.pressed ? Theme.bg-overlay : inc-touch.has-hover ? Theme.bg-elevated : transparent;
+            
+            animate background { duration: 100ms; easing: ease-out; }
+
+            inc-touch := TouchArea {
+                clicked => { value = min(maximum, value + 1); }
+            }
+
+            Text {
+                text: "+";
+                font-size: 18px;
+                font-weight: 500;
+                color: Theme.primary;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+    }
+}
+
+component GroupBox inherits Rectangle {
+    in property <string> title;
+    in property <string> icon: "";
+
+    background: Theme.bg-surface;
+    border-radius: Theme.radius-lg;
+    border-width: 1px;
+    border-color: Theme.border-subtle;
+
+    VerticalLayout {
+        padding: Theme.space-lg;
+        spacing: Theme.space-md;
+
+        // Header
+        HorizontalLayout {
+            spacing: Theme.space-sm;
+            
+            Rectangle {
+                width: 4px;
+                height: 20px;
+                background: Theme.primary;
+                border-radius: 2px;
+            }
+            
+            Text {
+                text: title;
+                font-size: 14px;
+                font-weight: 600;
+                color: Theme.text-primary;
+                vertical-alignment: center;
+            }
+        }
+
+        @children
+    }
+}
+
+component ScrollArea inherits Rectangle {
+    in property <length> viewport-height;
+    in-out property <length> viewport-y: 0;
+
+    property <length> scroll-range: viewport-height - root.height;
+
+    clip: true;
+    background: transparent;
+
+    TouchArea {
+        width: parent.width - 12px;
+        height: parent.height;
+
+        scroll-event(e) => {
+            viewport-y = clamp(viewport-y + e.delta-y * 0.5, -scroll-range, 0px);
+            accept
+        }
+    }
+
+    Rectangle {
+        y: viewport-y;
+        width: parent.width - 12px;
+        height: viewport-height;
+
+        @children
+    }
+
+    // Scrollbar track
+    scrollbar := Rectangle {
+        x: parent.width - 8px;
+        width: 6px;
+        height: parent.height;
+        background: Theme.bg-overlay;
+        border-radius: 3px;
+
+        property <length> thumb-h: max(40px, self.height * self.height / max(1px, viewport-height));
+        property <length> thumb-range: self.height - self.thumb-h;
+
+        track-touch := TouchArea {
+            clicked => {
+                root.viewport-y = clamp(
+                    -(self.mouse-y - scrollbar.thumb-h / 2) * scroll-range / scrollbar.thumb-range,
+                    -scroll-range,
+                    0px
+                );
+            }
+        }
+
+        Rectangle {
+            width: parent.width;
+            height: scrollbar.thumb-h;
+            y: scroll-range > 0px ? -viewport-y * scrollbar.thumb-range / scroll-range : 0px;
+            background: thumb-touch.pressed ? Theme.text-secondary : thumb-touch.has-hover ? Theme.text-muted : #404050;
+            border-radius: 3px;
+            
+            animate background { duration: 150ms; easing: ease-out; }
+
+            thumb-touch := TouchArea {
+                moved => {
+                    if self.pressed {
+                        root.viewport-y = clamp(
+                            root.viewport-y - (self.mouse-y - self.pressed-y) * scroll-range / scrollbar.thumb-range,
+                            -scroll-range,
+                            0px
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component WindowManagement inherits Window {
+    title: "Window Management";
+    width: 520px;
+    height: 600px;
+    background: Theme.bg-base;
+
+    callback toggle-minimized();
+    callback toggle-maximized();
+    callback toggle-fullscreen();
+    callback set-position();
+    callback get-position();
+    callback set-size();
+    callback get-size();
+    callback open-file();
+    callback save-file();
+    callback show-message();
+    callback show-confirm();
+    callback get-scale-factor();
+    callback check-visible();
+    callback request-redraw();
+    callback start-drag();
+    callback toggle-visibility();
+    callback set-icon();
+    callback show-pointers();
+
+    in-out property <string> status-text: "Ready";
+    in-out property <int> pos-x: 100;
+    in-out property <int> pos-y: 100;
+    in-out property <int> size-width: 520;
+    in-out property <int> size-height: 600;
+
+    VerticalLayout {
+        padding: Theme.space-xl;
+        spacing: Theme.space-lg;
+
+        // Header
+        VerticalLayout {
+            spacing: Theme.space-xs;
+
+            Text {
+                text: "Window Management";
+                font-size: 24px;
+                font-weight: 700;
+                color: Theme.text-primary;
+            }
+
+            Text {
+                text: "Control window state and properties";
+                font-size: 13px;
+                color: Theme.text-muted;
+            }
+        }
+
+        // Scrollable content
+        ScrollArea {
+            vertical-stretch: 1;
+            viewport-height: scroll-content.preferred-height;
+
+            scroll-content := VerticalLayout {
+                spacing: Theme.space-md;
+
+                GroupBox {
+                    title: "Window State";
+
+                    HorizontalLayout {
+                        spacing: Theme.space-sm;
+
+                        Button {
+                            text: "Minimize";
+                            clicked => { toggle-minimized(); }
+                        }
+
+                        Button {
+                            text: "Maximize";
+                            clicked => { toggle-maximized(); }
+                        }
+
+                        Button {
+                            text: "Fullscreen";
+                            primary: true;
+                            clicked => { toggle-fullscreen(); }
+                        }
+                    }
+                }
+
+                GroupBox {
+                    title: "Position";
+
+                    VerticalLayout {
+                        spacing: Theme.space-md;
+                        
+                        HorizontalLayout {
+                            spacing: Theme.space-md;
+                            alignment: start;
+
+                            Text {
+                                text: "X:";
+                                color: Theme.text-secondary;
+                                font-size: 13px;
+                                vertical-alignment: center;
+                                width: 24px;
+                            }
+
+                            SpinBox {
+                                value <=> pos-x;
+                                maximum: 4000;
+                            }
+
+                            Text {
+                                text: "Y:";
+                                color: Theme.text-secondary;
+                                font-size: 13px;
+                                vertical-alignment: center;
+                                width: 24px;
+                            }
+
+                            SpinBox {
+                                value <=> pos-y;
+                                maximum: 4000;
+                            }
+                        }
+                        
+                        HorizontalLayout {
+                            spacing: Theme.space-sm;
+                            
+                            Button {
+                                text: "Set Position";
+                                primary: true;
+                                clicked => { set-position(); }
+                            }
+
+                            Button {
+                                text: "Get Position";
+                                clicked => { get-position(); }
+                            }
+                        }
+                    }
+                }
+
+                GroupBox {
+                    title: "Size";
+
+                    VerticalLayout {
+                        spacing: Theme.space-md;
+                        
+                        HorizontalLayout {
+                            spacing: Theme.space-md;
+                            alignment: start;
+
+                            Text {
+                                text: "W:";
+                                color: Theme.text-secondary;
+                                font-size: 13px;
+                                vertical-alignment: center;
+                                width: 24px;
+                            }
+
+                            SpinBox {
+                                value <=> size-width;
+                                minimum: 100;
+                                maximum: 4000;
+                            }
+
+                            Text {
+                                text: "H:";
+                                color: Theme.text-secondary;
+                                font-size: 13px;
+                                vertical-alignment: center;
+                                width: 24px;
+                            }
+
+                            SpinBox {
+                                value <=> size-height;
+                                minimum: 100;
+                                maximum: 4000;
+                            }
+                        }
+                        
+                        HorizontalLayout {
+                            spacing: Theme.space-sm;
+                            
+                            Button {
+                                text: "Set Size";
+                                primary: true;
+                                clicked => { set-size(); }
+                            }
+
+                            Button {
+                                text: "Get Size";
+                                clicked => { get-size(); }
+                            }
+                        }
+                    }
+                }
+
+                GroupBox {
+                    title: "Window Info";
+
+                    VerticalLayout {
+                        spacing: Theme.space-sm;
+
+                        HorizontalLayout {
+                            spacing: Theme.space-sm;
+
+                            Button {
+                                text: "Scale Factor";
+                                clicked => { get-scale-factor(); }
+                            }
+
+                            Button {
+                                text: "Is Visible";
+                                clicked => { check-visible(); }
+                            }
+
+                            Button {
+                                text: "Redraw";
+                                clicked => { request-redraw(); }
+                            }
+                        }
+
+                        HorizontalLayout {
+                            spacing: Theme.space-sm;
+
+                        Button {
+                            text: "Set Icon";
+                                clicked => { set-icon(); }
+                            }
+
+                            Button {
+                                text: "Pointers";
+                                clicked => { show-pointers(); }
+                            }
+                        }
+                    }
+                }
+
+                GroupBox {
+                    title: "Dialogs";
+
+                    HorizontalLayout {
+                        spacing: Theme.space-sm;
+
+                        Button {
+                            text: "Open File";
+                            clicked => { open-file(); }
+                        }
+
+                        Button {
+                            text: "Save File";
+                            clicked => { save-file(); }
+                        }
+
+                        Button {
+                            text: "Message";
+                            clicked => { show-message(); }
+                        }
+
+                        Button {
+                            text: "Confirm";
+                            clicked => { show-confirm(); }
+                        }
+                    }
+                }
+
+                GroupBox {
+                    title: "Window Drag";
+
+                    HorizontalLayout {
+                        spacing: Theme.space-md;
+                        alignment: start;
+
+                        Button {
+                            text: "Start Drag";
+                            primary: true;
+                            clicked => { start-drag(); }
+                        }
+
+                        Text {
+                            text: "For frameless windows";
+                            color: Theme.text-muted;
+                            font-size: 12px;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Status bar
+        Rectangle {
+            height: 52px;
+            background: Theme.bg-surface;
+            border-radius: Theme.radius-lg;
+            border-width: 1px;
+            border-color: Theme.border-subtle;
+
+            HorizontalLayout {
+                padding-left: Theme.space-lg;
+                padding-right: Theme.space-lg;
+                spacing: Theme.space-md;
+                alignment: start;
+
+                // Status indicator
+                Rectangle {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 4px;
+                    background: status-text == "Ready" ? Theme.text-muted : Theme.success;
+                    y: (parent.height - self.height) / 2;
+                    
+                    animate background { duration: 200ms; easing: ease-out; }
+                }
+
+                Text {
+                    text: status-text;
+                    color: status-text == "Ready" ? Theme.text-muted : Theme.text-secondary;
+                    font-size: 13px;
+                    vertical-alignment: center;
+                    overflow: elide;
+                    
+                    animate color { duration: 200ms; easing: ease-out; }
+                }
+            }
+        }
+    }
+}
