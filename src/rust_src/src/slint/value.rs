@@ -1,3 +1,4 @@
+use i_slint_core::model::Model;
 use ring_lang_rs::{ffi, *};
 use slint_interpreter::{Struct, Value};
 
@@ -22,7 +23,13 @@ pub fn ring_list_to_args(list: RingList) -> Vec<Value> {
             }
             ffi::ITEMTYPE_STRING => {
                 let s = ring_list_getstring_str(list, i);
-                Value::String(SharedString::from(s))
+                if s == "true" {
+                    Value::Bool(true)
+                } else if s == "false" {
+                    Value::Bool(false)
+                } else {
+                    Value::String(SharedString::from(s))
+                }
             }
             ffi::ITEMTYPE_LIST => {
                 let sublist = ring_list_getlist(list, i);
@@ -41,7 +48,13 @@ pub fn ring_list_to_slint_value(p: *mut libc::c_void, param: i32) -> Value {
         Value::Number(ring_api_getnumber(p, param))
     } else if ring_api_isstring(p, param) {
         let s = ring_api_getstring_str(p, param);
-        Value::String(SharedString::from(s))
+        if s == "true" {
+            Value::Bool(true)
+        } else if s == "false" {
+            Value::Bool(false)
+        } else {
+            Value::String(SharedString::from(s))
+        }
     } else if ring_api_islist(p, param) {
         let list = ring_api_getlist(p, param);
         ring_list_to_slint_model_or_struct(list)
@@ -203,8 +216,13 @@ pub fn slint_value_to_ring(p: *mut libc::c_void, value: &Value) {
         Value::Void => {
             ring_ret_number!(p, 0.0);
         }
-        Value::Model(_model) => {
+        Value::Model(model) => {
             let list = ring_new_list!(p);
+            for row in 0..model.row_count() {
+                if let Some(val) = model.row_data(row) {
+                    add_slint_value_to_ring_list(list, &val);
+                }
+            }
             ring_ret_list!(p, list);
         }
         Value::Struct(s) => {
@@ -232,6 +250,25 @@ fn add_slint_value_to_ring_list(list: RingList, value: &Value) {
         }
         Value::Bool(b) => {
             ring_list_addint(list, if *b { 1 } else { 0 });
+        }
+        Value::Void => {
+            ring_list_addint(list, 0);
+        }
+        Value::Struct(s) => {
+            let sublist = ring_list_newlist(list);
+            for (key, val) in s.iter() {
+                let pair = ring_list_newlist(sublist);
+                ring_list_addstring_str(pair, key);
+                add_slint_value_to_ring_list(pair, val);
+            }
+        }
+        Value::Model(model) => {
+            let sublist = ring_list_newlist(list);
+            for row in 0..model.row_count() {
+                if let Some(val) = model.row_data(row) {
+                    add_slint_value_to_ring_list(sublist, &val);
+                }
+            }
         }
         _ => {
             ring_list_addint(list, 0);
