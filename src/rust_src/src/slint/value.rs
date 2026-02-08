@@ -1,8 +1,76 @@
+use i_slint_core::graphics::{Brush, Color};
 use i_slint_core::model::Model;
 use ring_lang_rs::{ffi, *};
-use slint_interpreter::{Struct, Value};
+use slint_interpreter::{Image, Struct, Value};
 
 type SharedString = slint_interpreter::SharedString;
+
+fn parse_hex_color(s: &str) -> Option<Color> {
+    if !s.starts_with('#') {
+        return None;
+    }
+    let hex = &s[1..];
+    match hex.len() {
+        6 => {
+            let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
+            let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
+            let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
+            Some(Color::from_argb_u8(255, r, g, b))
+        }
+        8 => {
+            let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
+            let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
+            let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
+            let a = u8::from_str_radix(&hex[6..8], 16).ok()?;
+            Some(Color::from_argb_u8(a, r, g, b))
+        }
+        _ => None,
+    }
+}
+
+fn parse_enum_value(s: &str) -> Option<(&str, &str)> {
+    if s.contains('/') || s.contains('\\') {
+        return None;
+    }
+    let dot_pos = s.find('.')?;
+    let name = &s[..dot_pos];
+    let value = &s[dot_pos + 1..];
+    if name.is_empty() || value.is_empty() {
+        return None;
+    }
+    if !name.chars().next()?.is_uppercase() {
+        return None;
+    }
+    Some((name, value))
+}
+
+fn string_to_slint_value(s: &str) -> Value {
+    if s == "true" {
+        Value::Bool(true)
+    } else if s == "false" {
+        Value::Bool(false)
+    } else if let Some(color) = parse_hex_color(s) {
+        Value::Brush(Brush::SolidColor(color))
+    } else if let Some((name, value)) = parse_enum_value(s) {
+        Value::EnumerationValue(name.to_string(), value.to_string())
+    } else {
+        Value::String(SharedString::from(s))
+    }
+}
+
+fn color_to_hex(c: Color) -> String {
+    if c.alpha() == 255 {
+        format!("#{:02x}{:02x}{:02x}", c.red(), c.green(), c.blue())
+    } else {
+        format!(
+            "#{:02x}{:02x}{:02x}{:02x}",
+            c.red(),
+            c.green(),
+            c.blue(),
+            c.alpha()
+        )
+    }
+}
 
 /// Convert a Ring list of arguments into a Vec<Value> for invoke calls
 pub fn ring_list_to_args(list: RingList) -> Vec<Value> {
@@ -23,13 +91,7 @@ pub fn ring_list_to_args(list: RingList) -> Vec<Value> {
             }
             ffi::ITEMTYPE_STRING => {
                 let s = ring_list_getstring_str(list, i);
-                if s == "true" {
-                    Value::Bool(true)
-                } else if s == "false" {
-                    Value::Bool(false)
-                } else {
-                    Value::String(SharedString::from(s))
-                }
+                string_to_slint_value(&s)
             }
             ffi::ITEMTYPE_LIST => {
                 let sublist = ring_list_getlist(list, i);
@@ -48,19 +110,19 @@ pub fn ring_list_to_slint_value(p: *mut libc::c_void, param: i32) -> Value {
         Value::Number(ring_api_getnumber(p, param))
     } else if ring_api_isstring(p, param) {
         let s = ring_api_getstring_str(p, param);
-        if s == "true" {
-            Value::Bool(true)
-        } else if s == "false" {
-            Value::Bool(false)
-        } else {
-            Value::String(SharedString::from(s))
-        }
+        string_to_slint_value(s)
     } else if ring_api_islist(p, param) {
         let list = ring_api_getlist(p, param);
         ring_list_to_slint_model_or_struct(list)
     } else {
         Value::Void
     }
+}
+
+pub fn ring_string_to_image(path: &str) -> Result<Value, String> {
+    Image::load_from_path(std::path::Path::new(path))
+        .map(Value::Image)
+        .map_err(|e| format!("Failed to load image '{}': {}", path, e))
 }
 
 fn is_ring_hash_list(list: RingList) -> bool {
@@ -127,13 +189,7 @@ fn ring_hash_to_slint_struct(list: RingList) -> Value {
             }
             ffi::ITEMTYPE_STRING => {
                 let s = ring_list_getstring_str(sublist, 2);
-                if s == "true" {
-                    Value::Bool(true)
-                } else if s == "false" {
-                    Value::Bool(false)
-                } else {
-                    Value::String(SharedString::from(s))
-                }
+                string_to_slint_value(&s)
             }
             ffi::ITEMTYPE_LIST => {
                 let nested = ring_list_getlist(sublist, 2);
@@ -234,6 +290,19 @@ pub fn slint_value_to_ring(p: *mut libc::c_void, value: &Value) {
             }
             ring_ret_list!(p, list);
         }
+        Value::Brush(brush) => {
+            let hex = color_to_hex(brush.color());
+            ring_ret_string!(p, &hex);
+        }
+        Value::Image(img) => {
+            if let Some(path) = img.path() {
+                ring_ret_string!(p, &path.to_string_lossy());
+            }
+        }
+        Value::EnumerationValue(name, value) => {
+            let s = format!("{}.{}", name, value);
+            ring_ret_string!(p, &s);
+        }
         _ => {
             ring_ret_number!(p, 0.0);
         }
@@ -269,6 +338,21 @@ fn add_slint_value_to_ring_list(list: RingList, value: &Value) {
                     add_slint_value_to_ring_list(sublist, &val);
                 }
             }
+        }
+        Value::Brush(brush) => {
+            let hex = color_to_hex(brush.color());
+            ring_list_addstring_str(list, &hex);
+        }
+        Value::Image(img) => {
+            if let Some(path) = img.path() {
+                ring_list_addstring_str(list, &path.to_string_lossy());
+            } else {
+                ring_list_addstring_str(list, "");
+            }
+        }
+        Value::EnumerationValue(name, value) => {
+            let s = format!("{}.{}", name, value);
+            ring_list_addstring_str(list, &s);
         }
         _ => {
             ring_list_addint(list, 0);

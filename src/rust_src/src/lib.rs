@@ -259,6 +259,36 @@ ring_func!(ring_slint_set_bool, |p| {
     }
 });
 
+ring_func!(ring_slint_set_image, |p| {
+    ring_check_paracount!(p, 3);
+    ring_check_cpointer!(p, 1);
+    ring_check_string!(p, 2);
+    ring_check_string!(p, 3);
+
+    if let Some(wrapper) = ring_get_pointer!(
+        p,
+        1,
+        slint::SlintInstanceWrapper,
+        slint::SLINT_INSTANCE_TYPE
+    ) {
+        let prop_name = ring_get_string!(p, 2);
+        let path = ring_get_string!(p, 3);
+
+        match slint::ring_string_to_image(path) {
+            Ok(value) => {
+                if let Err(e) = slint::instance_set_property(&wrapper.instance, prop_name, value) {
+                    ring_error!(p, &e);
+                }
+            }
+            Err(e) => {
+                ring_error!(p, &e);
+            }
+        }
+    } else {
+        ring_error!(p, "Invalid SlintInstance pointer");
+    }
+});
+
 ring_func!(ring_slint_on, |p| {
     ring_check_paracount!(p, 3);
     ring_check_cpointer!(p, 1);
@@ -1441,6 +1471,7 @@ ring_libinit! {
     "slint_get" => ring_slint_get,
     "slint_set" => ring_slint_set,
     "slint_set_bool" => ring_slint_set_bool,
+    "slint_set_image" => ring_slint_set_image,
     "slint_on" => ring_slint_on,
     "slint_invoke" => ring_slint_invoke,
     "slint_callback_arg" => ring_slint_callback_arg,
