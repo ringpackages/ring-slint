@@ -107,6 +107,19 @@ class SlintApp
         return self
 
     /**
+     * Sets an image property from a file path.
+     * Supports PNG, JPEG, BMP, and other formats.
+     * @param cProp Property name.
+     * @param cPath Path to the image file.
+     * @return Self for method chaining.
+     */
+    func setImage cProp, cPath
+        if pWindow != NULL
+            slint_set_image(pWindow, cProp, cPath)
+        ok
+        return self
+
+    /**
      * Gets the current value of a property.
      * @param cProp Property name.
      * @return The property value, or NULL if window not initialized.
