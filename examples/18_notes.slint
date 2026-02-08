@@ -1,0 +1,627 @@
+import { ListView, TextEdit, Palette } from "std-widgets.slint";
+
+component NoteItem inherits Rectangle {
+    in property <string> title;
+    in property <string> preview;
+    in property <string> date;
+    in property <bool> selected: false;
+    callback clicked();
+    callback delete-clicked();
+
+    height: 76px;
+    border-radius: 10px;
+    background: selected ? #7aa2f712 
+              : touch.has-hover ? #1e2030 
+              : transparent;
+    border-width: selected ? 1px : 0px;
+    border-color: selected ? #7aa2f730 : transparent;
+
+    animate background { duration: 150ms; easing: ease-out; }
+    animate border-width { duration: 150ms; }
+    animate border-color { duration: 150ms; }
+
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+    }
+
+    HorizontalLayout {
+        padding-left: 14px;
+        padding-right: 8px;
+        spacing: 8px;
+
+        // Left accent bar
+        VerticalLayout {
+            alignment: center;
+            Rectangle {
+                width: 3px;
+                height: selected ? 36px : 0px;
+                border-radius: 1.5px;
+                background: @linear-gradient(180deg, #7aa2f7 0%, #bb9af7 100%);
+                animate height { duration: 200ms; easing: ease-out; }
+            }
+        }
+
+        // Text content
+        VerticalLayout {
+            horizontal-stretch: 1;
+            alignment: center;
+            spacing: 4px;
+            padding-left: 4px;
+
+            Text {
+                text: title == "" ? "Untitled" : title;
+                font-size: 14px;
+                font-weight: selected ? 600 : 500;
+                color: selected ? #c0caf5 : (title == "" ? #565f89 : #a9b1d6);
+                overflow: elide;
+                font-italic: title == "";
+            }
+
+            Text {
+                text: preview == "" ? "No content" : preview;
+                font-size: 12px;
+                color: #565f89;
+                overflow: elide;
+                font-italic: preview == "";
+            }
+
+            Text {
+                text: date;
+                font-size: 10px;
+                color: #414868;
+                font-weight: 500;
+            }
+        }
+
+        // Delete button
+        VerticalLayout {
+            alignment: center;
+            Rectangle {
+                width: 28px;
+                height: 28px;
+                border-radius: 8px;
+                background: del-touch.has-hover ? #f7768e18 : transparent;
+                opacity: touch.has-hover || selected ? 1 : 0;
+
+                animate background { duration: 120ms; }
+                animate opacity { duration: 150ms; }
+
+                del-touch := TouchArea {
+                    clicked => { root.delete-clicked(); }
+                }
+
+                Path {
+                    width: 14px;
+                    height: 14px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    viewbox-width: 24;
+                    viewbox-height: 24;
+                    fill: del-touch.has-hover ? #f7768e : #565f89;
+                    commands: "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z";
+                }
+            }
+        }
+    }
+}
+
+export component App inherits Window {
+    title: "Notes";
+    preferred-width: 860px;
+    preferred-height: 620px;
+    min-width: 520px;
+    min-height: 380px;
+    background: bg-base;
+    default-font-family: "Inter";
+
+    // === API ===
+    callback add-note();
+    callback delete-note(int);
+    callback select-note(int);
+    callback update-title(string);
+    callback update-content(string);
+    callback search-changed(string);
+
+    in-out property <[{title: string, content: string, preview: string, date: string}]> notes: [];
+    in-out property <int> selected-index: -1;
+    in-out property <int> note-count: 0;
+    in-out property <string> current-title: "";
+    in-out property <string> current-content: "";
+    in-out property <string> search-text: "";
+
+    // Force dark theme for all std-widgets (scrollbar, etc.)
+    init => { Palette.color-scheme = ColorScheme.dark; }
+
+    // === Design Tokens (Tokyo Night) ===
+    property <color> bg-base: #13141f;
+    property <color> bg-surface: #1a1b2e;
+    property <color> bg-sidebar: #171828;
+    property <color> bg-highlight: #2f334d;
+    property <color> bg-input: #1e2030;
+    property <color> text-main: #c0caf5;
+    property <color> text-secondary: #a9b1d6;
+    property <color> text-dim: #565f89;
+    property <color> text-faint: #414868;
+    property <color> accent-primary: #7aa2f7;
+    property <color> accent-secondary: #bb9af7;
+    property <color> accent-glow: #7aa2f730;
+    property <color> danger: #f7768e;
+    property <color> border-subtle: #ffffff0a;
+    property <color> success: #9ece6a;
+
+    // Background
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: @radial-gradient(circle, #1a1b2e 0%, #13141f 85%);
+    }
+
+    // Decorative glow orb (top-right)
+    Rectangle {
+        x: parent.width - 200px;
+        y: -120px;
+        width: 350px;
+        height: 350px;
+        background: @radial-gradient(circle, #bb9af706 0%, transparent 70%);
+        border-radius: 175px;
+    }
+
+    // Decorative glow orb (bottom-left)
+    Rectangle {
+        x: -100px;
+        y: parent.height - 150px;
+        width: 300px;
+        height: 300px;
+        background: @radial-gradient(circle, #7aa2f706 0%, transparent 70%);
+        border-radius: 150px;
+    }
+
+    HorizontalLayout {
+        spacing: 0px;
+
+        Rectangle {
+            width: 270px;
+            background: bg-sidebar;
+            border-width: 0px;
+
+            // Right border line
+            Rectangle {
+                x: parent.width - 1px;
+                width: 1px;
+                height: 100%;
+                background: @linear-gradient(180deg, #ffffff08 0%, #ffffff04 50%, #ffffff08 100%);
+            }
+
+            VerticalLayout {
+                padding: 16px;
+                padding-right: 12px;
+                spacing: 0px;
+
+                // Sidebar Header
+                HorizontalLayout {
+                    height: 48px;
+                    spacing: 10px;
+
+                    VerticalLayout {
+                        alignment: center;
+                        horizontal-stretch: 1;
+
+                        HorizontalLayout {
+                            spacing: 8px;
+
+                            // Notes icon
+                            VerticalLayout {
+                                alignment: center;
+                                Path {
+                                    width: 18px;
+                                    height: 18px;
+                                    viewbox-width: 24;
+                                    viewbox-height: 24;
+                                    fill: accent-secondary;
+                                    commands: "M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z";
+                                }
+                            }
+
+                            Text {
+                                text: "Notes";
+                                font-size: 18px;
+                                font-weight: 700;
+                                color: text-main;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    // Note count badge
+                    VerticalLayout {
+                        alignment: center;
+                        Rectangle {
+                            width: 36px;
+                            height: 22px;
+                            border-radius: 11px;
+                            background: note-count > 0 ? #7aa2f718 : bg-highlight;
+                            border-width: 1px;
+                            border-color: note-count > 0 ? #7aa2f725 : border-subtle;
+
+                            Text {
+                                text: note-count;
+                                font-size: 11px;
+                                font-weight: 700;
+                                color: note-count > 0 ? accent-primary : text-dim;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    // Add note button
+                    VerticalLayout {
+                        alignment: center;
+                        Rectangle {
+                            width: 34px;
+                            height: 34px;
+                            border-radius: 10px;
+                            background: add-touch.pressed ? accent-primary 
+                                      : add-touch.has-hover ? bg-highlight 
+                                      : transparent;
+                            border-width: 1px;
+                            border-color: add-touch.has-hover ? #7aa2f740 : transparent;
+
+                            animate background { duration: 150ms; }
+                            animate border-color { duration: 150ms; }
+
+                            add-touch := TouchArea {
+                                mouse-cursor: pointer;
+                                clicked => { add-note(); }
+                            }
+
+                            // Plus icon
+                            Path {
+                                width: 18px;
+                                height: 18px;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                                viewbox-width: 24;
+                                viewbox-height: 24;
+                                fill: add-touch.has-hover ? accent-primary : text-dim;
+                                commands: "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z";
+                            }
+                        }
+                    }
+                }
+
+                // Search bar
+                Rectangle {
+                    height: 38px;
+                    background: bg-input;
+                    border-radius: 10px;
+                    border-width: 1px;
+                    border-color: search-field.has-focus ? #7aa2f740 : border-subtle;
+
+                    drop-shadow-blur: search-field.has-focus ? 12px : 0px;
+                    drop-shadow-color: search-field.has-focus ? #7aa2f715 : transparent;
+
+                    animate border-color { duration: 200ms; }
+                    animate drop-shadow-blur { duration: 200ms; }
+
+                    HorizontalLayout {
+                        padding-left: 12px;
+                        padding-right: 12px;
+                        spacing: 8px;
+
+                        // Search icon
+                        VerticalLayout {
+                            alignment: center;
+                            Path {
+                                width: 14px;
+                                height: 14px;
+                                viewbox-width: 24;
+                                viewbox-height: 24;
+                                fill: search-field.has-focus ? accent-primary : text-faint;
+                                commands: "M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z";
+                            }
+                        }
+
+                        search-field := TextInput {
+                            horizontal-stretch: 1;
+                            text <=> search-text;
+                            font-size: 13px;
+                            color: text-main;
+                            vertical-alignment: center;
+                            selection-background-color: accent-primary;
+                            edited => { search-changed(self.text); }
+
+                            // Placeholder
+                            Rectangle {
+                                visible: search-text == "";
+                                Text {
+                                    text: "Search notes...";
+                                    color: text-faint;
+                                    font-size: 13px;
+                                    vertical-alignment: center;
+                                    width: 100%;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Spacer
+                Rectangle { height: 10px; }
+
+                // Notes list
+                Rectangle {
+                    vertical-stretch: 1;
+                    clip: true;
+
+                    // Empty state
+                    if notes.length == 0: VerticalLayout {
+                        alignment: center;
+                        spacing: 14px;
+
+                        HorizontalLayout {
+                            alignment: center;
+                            Rectangle {
+                                width: 72px;
+                                height: 72px;
+                                border-radius: 36px;
+                                background: bg-input;
+
+                                Path {
+                                    width: 32px;
+                                    height: 32px;
+                                    x: (parent.width - self.width) / 2;
+                                    y: (parent.height - self.height) / 2;
+                                    viewbox-width: 24;
+                                    viewbox-height: 24;
+                                    fill: text-faint;
+                                    commands: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z";
+                                }
+                            }
+                        }
+
+                        Text {
+                            text: "No Notes Yet";
+                            font-size: 14px;
+                            font-weight: 600;
+                            color: text-dim;
+                            horizontal-alignment: center;
+                        }
+
+                        Text {
+                            text: "Tap + to create one";
+                            font-size: 12px;
+                            color: text-faint;
+                            horizontal-alignment: center;
+                        }
+                    }
+
+                    ListView {
+                        for note[idx] in notes: NoteItem {
+                            title: note.title;
+                            preview: note.preview;
+                            date: note.date;
+                            selected: idx == selected-index;
+                            clicked => { select-note(idx); }
+                            delete-clicked => { delete-note(idx); }
+                        }
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+            background: transparent;
+
+            // No note selected state
+            if selected-index < 0 || notes.length == 0 || selected-index >= notes.length: VerticalLayout {
+                alignment: center;
+                spacing: 20px;
+
+                HorizontalLayout {
+                    alignment: center;
+                    Rectangle {
+                        width: 100px;
+                        height: 100px;
+                        border-radius: 50px;
+                        background: bg-surface;
+                        border-width: 1px;
+                        border-color: border-subtle;
+
+                        Path {
+                            width: 44px;
+                            height: 44px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            viewbox-width: 24;
+                            viewbox-height: 24;
+                            fill: text-faint;
+                            commands: "M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z";
+                        }
+                    }
+                }
+
+                Text {
+                    text: "Select a Note";
+                    font-size: 20px;
+                    font-weight: 600;
+                    color: text-dim;
+                    horizontal-alignment: center;
+                }
+
+                Text {
+                    text: "Choose a note from the sidebar or create a new one";
+                    font-size: 13px;
+                    color: text-faint;
+                    horizontal-alignment: center;
+                }
+            }
+
+            // Editor when note is selected
+            if selected-index >= 0 && notes.length > 0 && selected-index < notes.length: VerticalLayout {
+                padding: 28px;
+                padding-top: 20px;
+                spacing: 0px;
+
+                // Editor header
+                HorizontalLayout {
+                    height: 40px;
+                    spacing: 12px;
+
+                    // Date pill
+                    VerticalLayout {
+                        alignment: center;
+                        horizontal-stretch: 1;
+
+                        HorizontalLayout {
+                            spacing: 8px;
+
+                            // Calendar icon
+                            VerticalLayout {
+                                alignment: center;
+                                Path {
+                                    width: 13px;
+                                    height: 13px;
+                                    viewbox-width: 24;
+                                    viewbox-height: 24;
+                                    fill: text-faint;
+                                    commands: "M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z";
+                                }
+                            }
+
+                            Text {
+                                text: selected-index >= 0 && notes.length > 0 ? notes[selected-index].date : "";
+                                font-size: 12px;
+                                color: text-faint;
+                                font-weight: 500;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    // Delete button
+                    VerticalLayout {
+                        alignment: center;
+                        Rectangle {
+                            width: 34px;
+                            height: 34px;
+                            border-radius: 10px;
+                            background: editor-del-touch.pressed ? #f7768e30 
+                                      : editor-del-touch.has-hover ? #f7768e15 
+                                      : transparent;
+                            border-width: 1px;
+                            border-color: editor-del-touch.has-hover ? #f7768e30 : transparent;
+
+                            animate background { duration: 150ms; }
+                            animate border-color { duration: 150ms; }
+
+                            editor-del-touch := TouchArea {
+                                mouse-cursor: pointer;
+                                clicked => { delete-note(selected-index); }
+                            }
+
+                            Path {
+                                width: 16px;
+                                height: 16px;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                                viewbox-width: 24;
+                                viewbox-height: 24;
+                                fill: editor-del-touch.has-hover ? danger : text-dim;
+                                commands: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z";
+                            }
+                        }
+                    }
+                }
+
+                // Separator
+                Rectangle {
+                    height: 1px;
+                    background: @linear-gradient(90deg, #ffffff08 0%, #ffffff04 100%);
+                }
+
+                // Spacer
+                Rectangle { height: 16px; }
+
+                // Title input area
+                Rectangle {
+                    height: 52px;
+
+                    title-input := TextInput {
+                        width: 100%;
+                        text <=> current-title;
+                        font-size: 26px;
+                        font-weight: 700;
+                        color: text-main;
+                        vertical-alignment: center;
+                        selection-background-color: accent-primary;
+                        edited => { update-title(self.text); }
+
+                        // Placeholder
+                        Rectangle {
+                            visible: current-title == "";
+                            Text {
+                                text: "Note title...";
+                                color: text-faint;
+                                font-size: 26px;
+                                font-weight: 700;
+                                vertical-alignment: center;
+                                width: 100%;
+                            }
+                        }
+                    }
+                }
+
+                // Spacer
+                Rectangle { height: 12px; }
+
+                // Content input area
+                Rectangle {
+                    vertical-stretch: 1;
+                    border-radius: 14px;
+                    border-width: 1px;
+                    border-color: content-input.has-focus ? #7aa2f725 : border-subtle;
+                    clip: true;
+
+                    drop-shadow-blur: content-input.has-focus ? 16px : 0px;
+                    drop-shadow-color: content-input.has-focus ? #7aa2f710 : transparent;
+
+                    animate border-color { duration: 200ms; }
+                    animate drop-shadow-blur { duration: 200ms; }
+
+                    VerticalLayout {
+                        content-input := TextEdit {
+                            horizontal-stretch: 1;
+                            vertical-stretch: 1;
+                            text <=> current-content;
+                            font-size: 14px;
+                            wrap: word-wrap;
+                            placeholder-text: "Write your thoughts, ideas, or anything on your mind...";
+                            edited(text) => { update-content(text); }
+                        }
+                    }
+                }
+
+                // Bottom bar
+                Rectangle {
+                    height: 36px;
+
+                    HorizontalLayout {
+                        alignment: end;
+                        spacing: 6px;
+                        padding-top: 10px;
+
+                        // Character count
+                        Text {
+                            text: current-content.character-count + " characters";
+                            font-size: 11px;
+                            color: text-faint;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

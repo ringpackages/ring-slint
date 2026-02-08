@@ -57,6 +57,8 @@ aPackageInfo = [
 		"examples/16_window_management.slint",
 		"examples/17_desktop_features.ring",
 		"examples/17_desktop_features.slint",
+		"examples/18_notes.ring",
+		"examples/18_notes.slint",
 		"src/slint.ring",
 		"src/rust_src/Cargo.toml",
 		"src/rust_src/.gitignore",
