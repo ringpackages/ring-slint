@@ -21,127 +21,127 @@ oApp = new SlintApp {
 }
 
 func onOpenFile
-    aFilters = [
-        ["Ring Files", "ring"],
-        ["Slint Files", "slint"],
-        ["All Files", "*"]
-    ]
-    cFile = oApp.fileOpenWithFilters("Select a File", aFilters)
-    if cFile != NULL and len(cFile) > 0
-        oApp.set("result-text", "Selected file:" + nl + cFile)
-    else
-        oApp.set("result-text", "No file selected")
-    ok
+     aFilters = [
+         ["Ring Files", "ring"],
+         ["Slint Files", "slint"],
+         ["All Files", "*"]
+     ]
+     cFile = oApp.fileOpenWithFilters("Select a File", aFilters)
+     if cFile != NULL and len(cFile) > 0
+         oApp.setString("result-text", "Selected file:" + nl + cFile)
+     else
+         oApp.setString("result-text", "No file selected")
+     ok
 
 func onOpenFiles
-    aFilters = [
-        ["Images", "png", "jpg", "jpeg", "gif"],
-        ["Documents", "txt", "pdf", "doc"],
-        ["All Files", "*"]
-    ]
-    aFiles = oApp.fileOpenMultipleWithFilters("Select Multiple Files", aFilters)
-    if len(aFiles) > 0
-        cResult = "Selected " + len(aFiles) + " file(s):" + nl
-        for cFile in aFiles
-            cResult += "  " + cFile + nl
-        next
-        oApp.set("result-text", cResult)
-    else
-        oApp.set("result-text", "No files selected")
-    ok
+     aFilters = [
+         ["Images", "png", "jpg", "jpeg", "gif"],
+         ["Documents", "txt", "pdf", "doc"],
+         ["All Files", "*"]
+     ]
+     aFiles = oApp.fileOpenMultipleWithFilters("Select Multiple Files", aFilters)
+     if len(aFiles) > 0
+         cResult = "Selected " + len(aFiles) + " file(s):" + nl
+         for cFile in aFiles
+             cResult += "  " + cFile + nl
+         next
+         oApp.setString("result-text", cResult)
+     else
+         oApp.setString("result-text", "No files selected")
+     ok
 
 func onSaveFile
-    aFilters = [
-        ["Ring Files", "ring"],
-        ["Text Files", "txt"]
-    ]
-    cFile = oApp.fileSaveWithFilters("Save File As", "untitled.ring", aFilters)
-    if cFile != NULL and len(cFile) > 0
-        oApp.set("result-text", "Save to:" + nl + cFile)
-    else
-        oApp.set("result-text", "Save canceled")
-    ok
+     aFilters = [
+         ["Ring Files", "ring"],
+         ["Text Files", "txt"]
+     ]
+     cFile = oApp.fileSaveWithFilters("Save File As", "untitled.ring", aFilters)
+     if cFile != NULL and len(cFile) > 0
+         oApp.setString("result-text", "Save to:" + nl + cFile)
+     else
+         oApp.setString("result-text", "Save canceled")
+     ok
 
 func onOpenFolder
-    cFolder = oApp.folderOpen("Select a Folder")
-    if cFolder != NULL and len(cFolder) > 0
-        oApp.set("result-text", "Selected folder:" + nl + cFolder)
-    else
-        oApp.set("result-text", "No folder selected")
-    ok
+     cFolder = oApp.folderOpen("Select a Folder")
+     if cFolder != NULL and len(cFolder) > 0
+         oApp.setString("result-text", "Selected folder:" + nl + cFolder)
+     else
+         oApp.setString("result-text", "No folder selected")
+     ok
 
 func onOpenFolders
-    aFolders = oApp.folderOpenMultiple("Select Multiple Folders")
-    if len(aFolders) > 0
-        cResult = "Selected " + len(aFolders) + " folder(s):" + nl
-        for cFolder in aFolders
-            cResult += "  " + cFolder + nl
-        next
-        oApp.set("result-text", cResult)
-    else
-        oApp.set("result-text", "No folders selected")
-    ok
+     aFolders = oApp.folderOpenMultiple("Select Multiple Folders")
+     if len(aFolders) > 0
+         cResult = "Selected " + len(aFolders) + " folder(s):" + nl
+         for cFolder in aFolders
+             cResult += "  " + cFolder + nl
+         next
+         oApp.setString("result-text", cResult)
+     else
+         oApp.setString("result-text", "No folders selected")
+     ok
 
 func onShowMsgbox
-    oApp.msgbox("Information", "This is an informational message!")
-    oApp.set("result-text", "Info message shown")
+     oApp.msgbox("Information", "This is an informational message!")
+     oApp.setString("result-text", "Info message shown")
 
 func onShowConfirm
-    nResult = oApp.confirm("Confirm Action", "Do you want to proceed with this operation?")
-    if nResult = 1
-        oApp.set("result-text", "User clicked OK")
-    else
-        oApp.set("result-text", "User clicked Cancel")
-    ok
+     nResult = oApp.confirm("Confirm Action", "Do you want to proceed with this operation?")
+     if nResult = 1
+         oApp.setString("result-text", "User clicked OK")
+     else
+         oApp.setString("result-text", "User clicked Cancel")
+     ok
 
 func onShowYesNo
-    nResult = oApp.yesno("Question", "Do you like Ring programming language?")
-    if nResult = 1
-        oApp.set("result-text", "User clicked Yes!")
-    else
-        oApp.set("result-text", "User clicked No")
-    ok
+     nResult = oApp.yesno("Question", "Do you like Ring programming language?")
+     if nResult = 1
+         oApp.setString("result-text", "User clicked Yes!")
+     else
+         oApp.setString("result-text", "User clicked No")
+     ok
 
 func onOpenFileSimple
-    cFile = oApp.fileOpen("Select Any File")
-    if cFile != NULL and len(cFile) > 0
-        oApp.set("result-text", "Selected file:" + nl + cFile)
-    else
-        oApp.set("result-text", "No file selected")
-    ok
+     cFile = oApp.fileOpen("Select Any File")
+     if cFile != NULL and len(cFile) > 0
+         oApp.setString("result-text", "Selected file:" + nl + cFile)
+     else
+         oApp.setString("result-text", "No file selected")
+     ok
 
 func onOpenFilesSimple
-    aFiles = oApp.fileOpenMultiple("Select Multiple Files")
-    if len(aFiles) > 0
-        cResult = "Selected " + len(aFiles) + " file(s):" + nl
-        for cFile in aFiles
-            cResult += "  " + cFile + nl
-        next
-        oApp.set("result-text", cResult)
-    else
-        oApp.set("result-text", "No files selected")
-    ok
+     aFiles = oApp.fileOpenMultiple("Select Multiple Files")
+     if len(aFiles) > 0
+         cResult = "Selected " + len(aFiles) + " file(s):" + nl
+         for cFile in aFiles
+             cResult += "  " + cFile + nl
+         next
+         oApp.setString("result-text", cResult)
+     else
+         oApp.setString("result-text", "No files selected")
+     ok
 
 func onSaveFileSimple
-    cFile = oApp.fileSave("Save File")
-    if cFile != NULL and len(cFile) > 0
-        oApp.set("result-text", "Save to:" + nl + cFile)
-    else
-        oApp.set("result-text", "Save canceled")
-    ok
+     cFile = oApp.fileSave("Save File")
+     if cFile != NULL and len(cFile) > 0
+         oApp.setString("result-text", "Save to:" + nl + cFile)
+     else
+         oApp.setString("result-text", "Save canceled")
+     ok
 
 func onSaveFileName
-    cFile = oApp.fileSaveWithName("Save File", "document.txt")
-    if cFile != NULL and len(cFile) > 0
-        oApp.set("result-text", "Save to:" + nl + cFile)
-    else
-        oApp.set("result-text", "Save canceled")
-    ok
+     cFile = oApp.fileSaveWithName("Save File", "document.txt")
+     if cFile != NULL and len(cFile) > 0
+         oApp.setString("result-text", "Save to:" + nl + cFile)
+     else
+         oApp.setString("result-text", "Save canceled")
+     ok
 
 func onShowMsgboxWarning
-    oApp.msgboxWarning("Warning", "This is a warning message!")
-    oApp.set("result-text", "Warning message shown")
+     oApp.msgboxWarning("Warning", "This is a warning message!")
+     oApp.setString("result-text", "Warning message shown")
 
 func onShowMsgboxError
-    oApp.msgboxError("Error", "This is an error message!")
-    oApp.set("result-text", "Error message shown")
+     oApp.msgboxError("Error", "This is an error message!")
+     oApp.setString("result-text", "Error message shown")

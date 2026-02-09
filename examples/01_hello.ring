@@ -9,4 +9,4 @@ oApp = new SlintApp {
 
 func onGreet
     ? "Button clicked!"
-    oApp.set("message", "Hello from Ring!")
+    oApp.setString("message", "Hello from Ring!")

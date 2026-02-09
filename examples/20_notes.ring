@@ -30,7 +30,7 @@ func onAddNote
         :date = cDate
     ])
     cSearchText = ""
-    oApp.set("search-text", "")
+    oApp.setString("search-text", "")
     rebuildModel()
     selectNote(len(aFilterMap) - 1)
     saveNotes()
@@ -43,9 +43,9 @@ func onDeleteNote
         nNewCount = len(aFilterMap)
         if nNewCount = 0
             nSelectedIndex = -1
-            oApp.set("selected-index", -1)
-            oApp.set("current-title", "")
-            oApp.set("current-content", "")
+            oApp.setNumber("selected-index", -1)
+            oApp.setString("current-title", "")
+            oApp.setString("current-content", "")
         else
             if nIndex >= nNewCount
                 selectNote(nNewCount - 1)
@@ -62,10 +62,10 @@ func onSelectNote
 func selectNote nDisplayIndex
     if nDisplayIndex >= 0 and nDisplayIndex < len(aFilterMap)
         nSelectedIndex = nDisplayIndex
-        oApp.set("selected-index", nSelectedIndex)
+        oApp.setNumber("selected-index", nSelectedIndex)
         aNote = aAllNotes[aFilterMap[nDisplayIndex + 1]]
-        oApp.set("current-title", aNote[:title])
-        oApp.set("current-content", aNote[:content])
+        oApp.setString("current-title", aNote[:title])
+        oApp.setString("current-content", aNote[:content])
     ok
 
 func onUpdateTitle
@@ -122,9 +122,9 @@ func rebuildModel
     next
     updateCount()
     nSelectedIndex = -1
-    oApp.set("selected-index", -1)
-    oApp.set("current-title", "")
-    oApp.set("current-content", "")
+    oApp.setNumber("selected-index", -1)
+    oApp.setString("current-title", "")
+    oApp.setString("current-content", "")
 
 func makePreview cText
     cClean = substr(cText, char(10), " ")
@@ -135,7 +135,7 @@ func makePreview cText
     return cClean
 
 func updateCount
-    oApp.set("note-count", len(aAllNotes))
+    oApp.setNumber("note-count", len(aAllNotes))
 
 # --- File persistence ---
 

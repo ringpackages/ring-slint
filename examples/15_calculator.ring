@@ -95,4 +95,4 @@ func calculate
     updateDisplay()
 
 func updateDisplay
-    oApp.set("display", cDisplay)
+    oApp.setString("display", cDisplay)

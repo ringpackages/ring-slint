@@ -9,4 +9,4 @@ oApp = new SlintApp {
 
 func onTabChanged
     nTab = oApp.callbackArg(1)
-    oApp.set("current-tab", nTab)
+    oApp.setNumber("current-tab", nTab)

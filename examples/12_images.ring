@@ -28,8 +28,8 @@ func showImage nIndex
     nCurrent = nIndex
     cPath = aImages[nCurrent]
     oApp.setImage("current-image", cPath)
-    oApp.set("image-index", nCurrent - 1)
-    oApp.set("image-label", cPath)
+    oApp.setNumber("image-index", nCurrent - 1)
+    oApp.setString("image-label", cPath)
     ? "Showing: " + cPath
 
 func onShuffle

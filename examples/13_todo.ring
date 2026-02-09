@@ -19,7 +19,7 @@ func onAddTodo
     cText = oApp.callbackArg(1)
     if len(trim(cText)) > 0
         oApp.modelPush(nModelId, [:text = cText, :completed = "false"])
-        oApp.set("new-todo-text", "")
+        oApp.setString("new-todo-text", "")
         updateCount()
     ok
 
@@ -51,13 +51,13 @@ func onClearCompleted
 
 func updateCount
     nCount = oApp.modelCount(nModelId)
-    oApp.set("todo-count", nCount)
+    oApp.setNumber("todo-count", nCount)
 
 func onInsertTodo
     cText = oApp.callbackArg(1)
     if len(trim(cText)) > 0
         oApp.modelInsert(nModelId, 0, [:text = cText, :completed = "false"])
-        oApp.set("new-todo-text", "")
+        oApp.setString("new-todo-text", "")
         updateCount()
     ok
 
@@ -66,4 +66,4 @@ func onResetAll
         oApp.modelDestroy(nModelId)
     ok
     nModelId = oApp.modelCreate("todos")
-    oApp.set("todo-count", 0)
+    oApp.setNumber("todo-count", 0)

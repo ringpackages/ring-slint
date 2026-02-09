@@ -40,13 +40,13 @@ func testAll
 func testString
     log("── String ──")
 
-    oApp.set("str-val", "hello ring")
+    oApp.setString("str-val", "hello ring")
     assert("set/get string", oApp.getProperty("str-val"), "hello ring")
 
-    oApp.set("str-val", "")
+    oApp.setString("str-val", "")
     assert("empty string", oApp.getProperty("str-val"), "")
 
-    oApp.set("str-val", "special: é ñ ü 日本語")
+    oApp.setString("str-val", "special: é ñ ü 日本語")
     assert("unicode string", oApp.getProperty("str-val"), "special: é ñ ü 日本語")
 
     cResult = oApp.invoke("greet", ["World"])
@@ -55,16 +55,16 @@ func testString
 func testNumber
     log("── Number ──")
 
-    oApp.set("int-val", 42)
+    oApp.setNumber("int-val", 42)
     assert("set/get int", oApp.getProperty("int-val"), 42)
 
-    oApp.set("int-val", -100)
+    oApp.setNumber("int-val", -100)
     assert("negative int", oApp.getProperty("int-val"), -100)
 
-    oApp.set("int-val", 0)
+    oApp.setNumber("int-val", 0)
     assert("zero", oApp.getProperty("int-val"), 0)
 
-    oApp.set("float-val", 3.14)
+    oApp.setNumber("float-val", 3.14)
     nFloat = oApp.getProperty("float-val")
     assertApprox("set/get float", nFloat, 3.14, 0.01)
 
@@ -74,11 +74,11 @@ func testNumber
 func testBool
     log("── Bool ──")
 
-    oApp.set("bool-val", "true")
-    assert("set true via string", oApp.getProperty("bool-val"), 1)
+    oApp.setBool("bool-val", true)
+    assert("set true", oApp.getProperty("bool-val"), 1)
 
-    oApp.set("bool-val", "false")
-    assert("set false via string", oApp.getProperty("bool-val"), 0)
+    oApp.setBool("bool-val", false)
+    assert("set false", oApp.getProperty("bool-val"), 0)
 
     oApp.setBool("bool-val", true)
     assert("setBool true", oApp.getProperty("bool-val"), 1)
@@ -148,31 +148,31 @@ func testModel
 func testColor
     log("── Color ──")
 
-    oApp.set("color-val", "#ff0000")
+    oApp.setColor("color-val", "#ff0000")
     assert("set red via hex6", oApp.getProperty("color-val"), "#ff0000")
 
-    oApp.set("color-val", "#00ff00")
+    oApp.setColor("color-val", "#00ff00")
     assert("set green via hex6", oApp.getProperty("color-val"), "#00ff00")
 
-    oApp.set("color-val", "#0000ff80")
+    oApp.setColor("color-val", "#0000ff80")
     assert("set blue+alpha via hex8", oApp.getProperty("color-val"), "#0000ff80")
 
-    oApp.set("color-val", "#ffffff")
+    oApp.setColor("color-val", "#ffffff")
     assert("set white", oApp.getProperty("color-val"), "#ffffff")
 
-    oApp.set("color-val", "#000000")
+    oApp.setColor("color-val", "#000000")
     assert("set black", oApp.getProperty("color-val"), "#000000")
 
 func testEnum
     log("── Enum ──")
 
-    oApp.set("align-val", "TextHorizontalAlignment.left")
+    oApp.setEnum("align-val", "TextHorizontalAlignment.left")
     assert("set enum left", oApp.getProperty("align-val"), "TextHorizontalAlignment.left")
 
-    oApp.set("align-val", "TextHorizontalAlignment.center")
+    oApp.setEnum("align-val", "TextHorizontalAlignment.center")
     assert("set enum center", oApp.getProperty("align-val"), "TextHorizontalAlignment.center")
 
-    oApp.set("align-val", "TextHorizontalAlignment.right")
+    oApp.setEnum("align-val", "TextHorizontalAlignment.right")
     assert("set enum right", oApp.getProperty("align-val"), "TextHorizontalAlignment.right")
 
 func testImage
@@ -184,16 +184,16 @@ func testImage
 func testRoundtrip
     log("── Roundtrip ──")
 
-    oApp.set("str-val", "roundtrip")
+    oApp.setString("str-val", "roundtrip")
     assert("string roundtrip", oApp.getProperty("str-val"), "roundtrip")
 
-    oApp.set("int-val", 999)
+    oApp.setNumber("int-val", 999)
     assert("int roundtrip", oApp.getProperty("int-val"), 999)
 
-    oApp.set("float-val", 2.718)
+    oApp.setNumber("float-val", 2.718)
     assertApprox("float roundtrip", oApp.getProperty("float-val"), 2.718, 0.01)
 
-    oApp.set("bool-val", "true")
+    oApp.setBool("bool-val", true)
     assert("bool roundtrip", oApp.getProperty("bool-val"), 1)
 
     nModelId = oApp.modelCreate("people")
@@ -206,10 +206,10 @@ func testRoundtrip
     nSum = oApp.invoke("add-numbers", [123, 456])
     assert("invoke roundtrip", nSum, 579)
 
-    oApp.set("color-val", "#abcdef")
+    oApp.setColor("color-val", "#abcdef")
     assert("color roundtrip", oApp.getProperty("color-val"), "#abcdef")
 
-    oApp.set("align-val", "TextHorizontalAlignment.right")
+    oApp.setEnum("align-val", "TextHorizontalAlignment.right")
     assert("enum roundtrip", oApp.getProperty("align-val"), "TextHorizontalAlignment.right")
 
     oApp.modelDestroy(nModelId)
@@ -235,4 +235,4 @@ func assertApprox cName, actual, expected, tolerance
 func log cMsg
     ? cMsg
     cLog += cMsg + nl
-    oApp.set("log-text", cLog)
+    oApp.setString("log-text", cLog)

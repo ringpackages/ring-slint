@@ -98,15 +98,15 @@ oApp = new SlintApp {
 func onGreet
     cName = oApp.callbackArg(1)
     if len(cName) > 0
-        oApp.set("greeting", "Hello, " + cName + "!")
+        oApp.setString("greeting", "Hello, " + cName + "!")
     else
-        oApp.set("greeting", "Please enter your name first!")
+        oApp.setString("greeting", "Please enter your name first!")
     ok
     ? "Greeted: " + cName
 
 func onUpdateMessage
     cMessage = oApp.callbackArg(1)
-    oApp.set("greeting", cMessage)
+    oApp.setString("greeting", cMessage)
 
 func onClearForm
-    oApp.set("greeting", "Enter your name and click Greet!")
+    oApp.setString("greeting", "Enter your name and click Greet!")

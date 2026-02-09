@@ -28,53 +28,53 @@ oApp = new SlintApp {
 func onToggleMinimized
     if oApp.windowIsMinimized()
         oApp.windowSetMinimized(0)
-        oApp.set("status-text", "Window restored from minimized")
+        oApp.setString("status-text", "Window restored from minimized")
     else
         oApp.windowSetMinimized(1)
-        oApp.set("status-text", "Window minimized")
+        oApp.setString("status-text", "Window minimized")
     ok
 
 func onToggleMaximized
     if oApp.windowIsMaximized()
         oApp.windowSetMaximized(0)
-        oApp.set("status-text", "Window restored from maximized")
+        oApp.setString("status-text", "Window restored from maximized")
     else
         oApp.windowSetMaximized(1)
-        oApp.set("status-text", "Window maximized")
+        oApp.setString("status-text", "Window maximized")
     ok
 
 func onToggleFullscreen
     if oApp.windowIsFullscreen()
         oApp.windowSetFullscreen(0)
-        oApp.set("status-text", "Window exited fullscreen")
+        oApp.setString("status-text", "Window exited fullscreen")
     else
         oApp.windowSetFullscreen(1)
-        oApp.set("status-text", "Window entered fullscreen")
+        oApp.setString("status-text", "Window entered fullscreen")
     ok
 
 func onSetPosition
     nX = oApp.getProperty("pos-x")
     nY = oApp.getProperty("pos-y")
     oApp.windowSetPosition(nX, nY)
-    oApp.set("status-text", "Position set to: " + nX + ", " + nY)
+    oApp.setString("status-text", "Position set to: " + nX + ", " + nY)
 
 func onGetPosition
     aPos = oApp.windowGetPosition()
-    oApp.set("pos-x", aPos[1])
-    oApp.set("pos-y", aPos[2])
-    oApp.set("status-text", "Current position: " + aPos[1] + ", " + aPos[2])
+    oApp.setNumber("pos-x", aPos[1])
+    oApp.setNumber("pos-y", aPos[2])
+    oApp.setString("status-text", "Current position: " + aPos[1] + ", " + aPos[2])
 
 func onSetSize
     nWidth = oApp.getProperty("size-width")
     nHeight = oApp.getProperty("size-height")
     oApp.windowSetSize(nWidth, nHeight)
-    oApp.set("status-text", "Size set to: " + nWidth + " x " + nHeight)
+    oApp.setString("status-text", "Size set to: " + nWidth + " x " + nHeight)
 
 func onGetSize
     aSize = oApp.windowGetSize()
-    oApp.set("size-width", aSize[1])
-    oApp.set("size-height", aSize[2])
-    oApp.set("status-text", "Current size: " + aSize[1] + " x " + aSize[2])
+    oApp.setNumber("size-width", aSize[1])
+    oApp.setNumber("size-height", aSize[2])
+    oApp.setString("status-text", "Current size: " + aSize[1] + " x " + aSize[2])
 
 func onOpenFile
     aFilters = [
@@ -84,9 +84,9 @@ func onOpenFile
     ]
     cFile = oApp.fileOpenWithFilters("Select a File", aFilters)
     if cFile != NULL and len(cFile) > 0
-        oApp.set("status-text", "Selected: " + cFile)
+        oApp.setString("status-text", "Selected: " + cFile)
     else
-        oApp.set("status-text", "No file selected")
+        oApp.setString("status-text", "No file selected")
     ok
 
 func onSaveFile
@@ -96,53 +96,47 @@ func onSaveFile
     ]
     cFile = oApp.fileSaveWithFilters("Save File As", "untitled.ring", aFilters)
     if cFile != NULL and len(cFile) > 0
-        oApp.set("status-text", "Save to: " + cFile)
+        oApp.setString("status-text", "Save to: " + cFile)
     else
-        oApp.set("status-text", "Save canceled")
+        oApp.setString("status-text", "Save canceled")
     ok
 
 func onShowMessage
     oApp.msgbox("Test Message", "This is a test message from SlintApp!")
-    oApp.set("status-text", "Message box shown")
+    oApp.setString("status-text", "Message box shown")
 
 func onShowConfirm
     nResult = oApp.confirm("Confirm", "Do you want to continue?")
     if nResult = 1
-        oApp.set("status-text", "User confirmed (OK)")
+        oApp.setString("status-text", "User confirmed (OK)")
     else
-        oApp.set("status-text", "User canceled")
+        oApp.setString("status-text", "User canceled")
     ok
 
 func onGetScaleFactor
     nScale = oApp.windowScaleFactor()
-    oApp.set("status-text", "Scale factor: " + nScale)
+    oApp.setString("status-text", "Scale factor: " + nScale)
 
 func onCheckVisible
     nVisible = oApp.windowIsVisible()
     if nVisible = 1
-        oApp.set("status-text", "Window is visible")
+        oApp.setString("status-text", "Window is visible")
     else
-        oApp.set("status-text", "Window is not visible")
+        oApp.setString("status-text", "Window is not visible")
     ok
 
 func onRequestRedraw
     oApp.windowRequestRedraw()
-    oApp.set("status-text", "Redraw requested")
+    oApp.setString("status-text", "Redraw requested")
 
 func onStartDrag
     oApp.windowDrag()
-    oApp.set("status-text", "Window drag initiated")
+    oApp.setString("status-text", "Window drag initiated")
 
 func onSetIcon
-    # windowSetIcon - set custom window icon
-    # Note: Requires an actual icon file to work
-    try 
-        cIconPath = currentdir() + "/icon.png"
-        oApp.windowSetIcon(cIconPath)
-        oApp.set("status-text", "Window icon set (if icon.png exists)")
-    catch
-        oApp.set("status-text", "Failed to set icon (icon.png not found)")
-    done
+    cIconPath = currentdir() + "/images/ring.png"
+    oApp.windowSetIcon(cIconPath)
+    oApp.setString("status-text", "Window icon set")
 
 func onShowPointers
     # window() and definition() getters
@@ -158,4 +152,4 @@ func onShowPointers
     else
         cDef = "null"
     ok
-    oApp.set("status-text", "Window: " + cWin + " | Definition: " + cDef)
+    oApp.setString("status-text", "Window: " + cWin + " | Definition: " + cDef)

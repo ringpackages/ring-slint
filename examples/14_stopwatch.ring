@@ -37,12 +37,12 @@ func onReset
     ok
     nMilliseconds = 0
     oApp.setBool("running", false)
-    oApp.set("display", "00:00.00")
+    oApp.setString("display", "00:00.00")
     oApp.modelClear(nLapsModelId)
 
 func onTick
     nMilliseconds += 10
-    oApp.set("display", formatTime(nMilliseconds))
+    oApp.setString("display", formatTime(nMilliseconds))
 
 func formatTime nMs
     nTotalSecs = floor(nMs / 1000)

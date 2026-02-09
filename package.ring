@@ -52,6 +52,7 @@ aPackageInfo = [
 		"examples/images/photo3.jpg",
 		"examples/images/photo4.jpg",
 		"examples/images/photo5.jpg",
+		"examples/images/ring.png",
 		"examples/13_todo.ring",
 		"examples/13_todo.slint",
 		"examples/14_stopwatch.ring",

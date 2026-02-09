@@ -14,7 +14,7 @@ func onButtonClicked
     if nArgs > 0
         cButtonId = oApp.callbackArg(1)
         ? "Button ID: " + cButtonId
-        oApp.set("last-clicked", "Last clicked: " + cButtonId)
+        oApp.setString("last-clicked", "Last clicked: " + cButtonId)
     ok
 
 func onSliderChanged
@@ -22,5 +22,5 @@ func onSliderChanged
     if nArgs > 0
         nValue = oApp.callbackArg(1)
         ? "Slider value: " + nValue
-        oApp.set("slider-display", "Value: " + floor(nValue))
+        oApp.setString("slider-display", "Value: " + floor(nValue))
     ok

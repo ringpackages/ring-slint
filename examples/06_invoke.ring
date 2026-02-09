@@ -15,4 +15,4 @@ func onCalculate
     ? "A=" + nA + ", B=" + nB
     ? "Sum: " + nSum
     ? "Product: " + nProduct
-    oApp.set("result", "Sum: " + nSum + ", Product: " + nProduct)
+    oApp.setString("result", "Sum: " + nSum + ", Product: " + nProduct)

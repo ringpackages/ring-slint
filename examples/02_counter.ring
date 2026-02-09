@@ -14,12 +14,12 @@ oApp = new SlintApp {
 
 func onIncrement
     nCount++
-    oApp.set("counter", nCount)
+    oApp.setNumber("counter", nCount)
 
 func onDecrement
     nCount--
-    oApp.set("counter", nCount)
+    oApp.setNumber("counter", nCount)
 
 func onReset
     nCount = 0
-    oApp.set("counter", nCount)
+    oApp.setNumber("counter", nCount)

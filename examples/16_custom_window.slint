@@ -172,16 +172,18 @@ component CloseButton inherits Rectangle {
 
 component ColorSwatch inherits Rectangle {
     in property <color> swatch-color;
+    in property <bool> active: false;
+    callback clicked();
     
     width: 52px;
     height: 52px;
     border-radius: Theme.radius-md;
     background: touch.has-hover ? swatch-color : swatch-color.darker(0.15);
     border-width: 2px;
-    border-color: touch.has-hover ? white.with-alpha(0.5) : transparent;
+    border-color: active ? white.with-alpha(0.8) : touch.has-hover ? white.with-alpha(0.5) : transparent;
     
-    drop-shadow-blur: touch.has-hover ? 16px : 8px;
-    drop-shadow-color: swatch-color.with-alpha(touch.has-hover ? 0.5 : 0.3);
+    drop-shadow-blur: active ? 20px : touch.has-hover ? 16px : 8px;
+    drop-shadow-color: swatch-color.with-alpha(active ? 0.6 : touch.has-hover ? 0.5 : 0.3);
     
     animate background { duration: 200ms; easing: ease-out; }
     animate border-color { duration: 200ms; easing: ease-out; }
@@ -190,6 +192,7 @@ component ColorSwatch inherits Rectangle {
     
     touch := TouchArea {
         mouse-cursor: pointer;
+        clicked => { root.clicked(); }
     }
 }
 
@@ -201,10 +204,13 @@ export component App inherits Window {
 
     callback close-window();
     callback opacity-changed(float);
+    callback color-selected(int);
     callback start-drag();
 
     in-out property <float> window-opacity: 0.95;
     in-out property <float> blur-amount: 0;
+    in-out property <int> active-swatch: 3;
+    in-out property <color> active-accent: Theme.accent-primary;
 
     // Background with opacity
     Rectangle {
@@ -212,7 +218,9 @@ export component App inherits Window {
         opacity: window-opacity;
         border-radius: Theme.radius-xl;
         border-width: 1px;
-        border-color: Theme.border-medium;
+        border-color: active-accent.with-alpha(0.15);
+        
+        animate border-color { duration: 300ms; easing: ease-out; }
     }
 
     // Content layer (always full opacity)
@@ -239,10 +247,10 @@ export component App inherits Window {
                     width: 48px;
                     height: 48px;
                     border-radius: Theme.radius-md;
-                    background: @linear-gradient(135deg, Theme.accent-primary 0%, Theme.accent-cyan 100%);
+                    background: @linear-gradient(135deg, active-accent 0%, active-accent.brighter(0.4) 100%);
                     
                     drop-shadow-blur: 12px;
-                    drop-shadow-color: Theme.accent-primary.with-alpha(0.4);
+                    drop-shadow-color: active-accent.with-alpha(0.4);
                     
                     Path {
                         width: 24px;
@@ -285,7 +293,7 @@ export component App inherits Window {
         Slider {
             label: "Window Opacity";
             unit: "%";
-            accent: Theme.accent-primary;
+            accent: active-accent;
             min-value: 30;
             max-value: 100;
             value: window-opacity * 100;
@@ -322,11 +330,31 @@ export component App inherits Window {
                 spacing: Theme.space-md;
                 alignment: center;
                 
-                ColorSwatch { swatch-color: Theme.accent-error; }
-                ColorSwatch { swatch-color: Theme.accent-warning; }
-                ColorSwatch { swatch-color: Theme.accent-success; }
-                ColorSwatch { swatch-color: Theme.accent-primary; }
-                ColorSwatch { swatch-color: Theme.accent-cyan; }
+                ColorSwatch {
+                    swatch-color: Theme.accent-error;
+                    active: active-swatch == 0;
+                    clicked => { active-accent = Theme.accent-error; active-swatch = 0; color-selected(0); }
+                }
+                ColorSwatch {
+                    swatch-color: Theme.accent-warning;
+                    active: active-swatch == 1;
+                    clicked => { active-accent = Theme.accent-warning; active-swatch = 1; color-selected(1); }
+                }
+                ColorSwatch {
+                    swatch-color: Theme.accent-success;
+                    active: active-swatch == 2;
+                    clicked => { active-accent = Theme.accent-success; active-swatch = 2; color-selected(2); }
+                }
+                ColorSwatch {
+                    swatch-color: Theme.accent-primary;
+                    active: active-swatch == 3;
+                    clicked => { active-accent = Theme.accent-primary; active-swatch = 3; color-selected(3); }
+                }
+                ColorSwatch {
+                    swatch-color: Theme.accent-cyan;
+                    active: active-swatch == 4;
+                    clicked => { active-accent = Theme.accent-cyan; active-swatch = 4; color-selected(4); }
+                }
             }
         }
 
