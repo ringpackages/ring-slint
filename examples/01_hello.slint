@@ -117,13 +117,17 @@ export component App inherits Window {
                 letter-spacing: 1px;
             }
 
-            Path {
-                width: 16px;
-                height: 16px;
-                viewbox-width: 24;
-                viewbox-height: 24;
-                fill: #0a0a0fcc;
-                commands: "M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z";
+            VerticalLayout {
+                alignment: center;
+
+                Path {
+                    width: 16px;
+                    height: 16px;
+                    viewbox-width: 24;
+                    viewbox-height: 24;
+                    fill: #0a0a0fcc;
+                    commands: "M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z";
+                }
             }
         }
     }
