@@ -193,7 +193,7 @@ For more examples, see the [`examples/`](examples/) directory.
 
 | Document | Description |
 |----------|-------------|
-| **[API Reference](docs/API.md)** | Complete reference for all 94 SlintApp methods |
+| **[API Reference](docs/API.md)** | Complete reference for all 99 SlintApp methods |
 | **[Android Guide](docs/ANDROID.md)** | Building and deploying on Android |
 
 ### Quick Reference
