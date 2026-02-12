@@ -195,6 +195,7 @@ For more examples, see the [`examples/`](examples/) directory.
 |----------|-------------|
 | **[API Reference](docs/API.md)** | Complete reference for all 99 SlintApp methods |
 | **[Android Guide](docs/ANDROID.md)** | Building and deploying on Android |
+| **[iOS Guide](docs/iOS.md)** | Building and deploying on iOS |
 
 ### Quick Reference
 
@@ -254,10 +255,6 @@ These features are not available on Android:
    ```
 
 The compiled library will be in `src/rust_src/target/release/`.
-
-## 📋 TODO
-
-- [ ] iOS support
 
 ## 🔗 Resources
 
