@@ -24,8 +24,8 @@ Ring Slint is a powerful Ring library that brings the [Slint](https://slint.dev/
 
 ## ✨ Features
 
-- **High Performance:** .slint files are compiled at runtime with GPU-accelerated rendering via Skia on all platforms.
-- **Cross-Platform:** Build applications for Windows, macOS, Linux, FreeBSD, and Android from a single codebase.
+- **High Performance:** .slint files are interpreted at runtime with GPU-accelerated rendering via Skia (FemtoVG on FreeBSD).
+- **Cross-Platform:** Build applications for Windows, macOS, Linux, FreeBSD, Android, and iOS from a single codebase.
 - **Declarative UI:** Design your interface using Slint's intuitive `.slint` markup language.
 - **Two-Way Binding:** Seamlessly connect Ring callbacks to Slint events and update properties dynamically.
 - **Rich Widget Set:** Access Slint's built-in widgets with multiple themes (Fluent, Material, Cupertino, Native).
@@ -59,39 +59,6 @@ Ring Slint is a powerful Ring library that brings the [Slint](https://slint.dev/
 ### Installation
 
 <details>
-<summary>Click here for instructions on <img width="20" height="20" src="https://www.kernel.org/theme/images/logos/favicon.png" /> Linux</summary>
-
-The library uses Skia for rendering and requires fontconfig.
-
-*   **<img width="16" height="16" src="https://www.debian.org/favicon.ico" /> Debian/Ubuntu:** `sudo apt install libfontconfig1`
-*   **<img width="16" height="16" src="https://archlinux.org/static/favicon.png" /> Arch Linux:** `sudo pacman -S fontconfig`
-*   **<img width="16" height="16" src="https://fedoraproject.org/favicon.ico" /> Fedora:** `sudo dnf install fontconfig`
-*   **<img width="16" height="16" src="https://www.alpinelinux.org/alpine-logo.ico" /> Alpine Linux:** `sudo apk add fontconfig`
-
-</details>
-
-<details>
-<summary>Click here for instructions on <img width="20" height="20" src="https://blogs.windows.com/wp-content/uploads/prod/2022/09/cropped-Windows11IconTransparent512-32x32.png" /> Windows</summary>
-
-No additional dependencies required. The library is self-contained.
-
-</details>
-
-<details>
-<summary>Click here for instructions on <img width="20" height="20" src="https://www.freebsd.org/favicon.ico" /> FreeBSD</summary>
-
-*   **FreeBSD:** `sudo pkg install fontconfig`
-
-</details>
-
-<details>
-<summary>Click here for instructions on <img width="20" height="20" src="https://developer.apple.com/favicon.ico" /> macOS</summary>
-
-No additional dependencies required. Uses system frameworks.
-
-</details>
-
-<details>
 <summary>Click here for instructions on <img width="20" height="20" src="https://developer.android.com/favicon.ico" /> Android</summary>
 
 Android builds use GPU-accelerated rendering via Skia (OpenGL ES or Vulkan). Desktop-only features (file dialogs, notifications, hotkeys, system tray) are not available on Android.
@@ -117,6 +84,67 @@ keystore_password = "your_password"
 key_alias = "your_alias"
 key_password = "your_key_password"
 ```
+
+</details>
+
+<details>
+<summary>Click here for instructions on <img width="20" height="20" src="https://www.freebsd.org/favicon.ico" /> FreeBSD</summary>
+
+*   **FreeBSD:** `sudo pkg install fontconfig`
+
+</details>
+
+<details>
+<summary>Click here for instructions on <img width="20" height="20" src="https://developer.apple.com/favicon.ico" /> iOS</summary>
+
+iOS builds use GPU-accelerated rendering via Skia (Metal). Desktop-only features (file dialogs, notifications, clipboard, hotkeys, system tray) are not available on iOS.
+
+**Build requirements:**
+- macOS with Xcode installed
+- Rust with iOS targets: `rustup target add aarch64-apple-ios aarch64-apple-ios-sim`
+- Optional: `xcodegen` (`brew install xcodegen`) and `ios-deploy` (`brew install ios-deploy`)
+
+**Build for iOS:**
+```sh
+cd ios/
+
+# Simulator
+./build.sh --simulator
+
+# Device
+./build.sh
+
+# Build, install, and run on device
+./build.sh --run
+```
+
+For more details, see the **[iOS Guide](docs/iOS.md)**.
+
+</details>
+
+<details>
+<summary>Click here for instructions on <img width="20" height="20" src="https://www.kernel.org/theme/images/logos/favicon.png" /> Linux</summary>
+
+The library uses Skia for rendering and requires fontconfig.
+
+*   **<img width="16" height="16" src="https://www.debian.org/favicon.ico" /> Debian/Ubuntu:** `sudo apt install libfontconfig1`
+*   **<img width="16" height="16" src="https://archlinux.org/static/favicon.png" /> Arch Linux:** `sudo pacman -S fontconfig`
+*   **<img width="16" height="16" src="https://fedoraproject.org/favicon.ico" /> Fedora:** `sudo dnf install fontconfig`
+*   **<img width="16" height="16" src="https://www.alpinelinux.org/alpine-logo.ico" /> Alpine Linux:** `sudo apk add fontconfig`
+
+</details>
+
+<details>
+<summary>Click here for instructions on <img width="20" height="20" src="https://developer.apple.com/favicon.ico" /> macOS</summary>
+
+No additional dependencies required. Uses system frameworks.
+
+</details>
+
+<details>
+<summary>Click here for instructions on <img width="20" height="20" src="https://blogs.windows.com/wp-content/uploads/prod/2022/09/cropped-Windows11IconTransparent512-32x32.png" /> Windows</summary>
+
+No additional dependencies required. The library is self-contained.
 
 </details>
 
@@ -201,8 +229,8 @@ For more examples, see the [`examples/`](examples/) directory.
 
 | Category | Methods |
 |----------|---------|
-| **Core** | `loadUI()`, `loadUIString()`, `show()`, `hide()`, `run()`, `quit()` |
-| **Properties** | `set()`, `setBool()`, `setString()`, `setNumber()`, `setColor()`, `setEnum()`, `getProperty()` |
+| **Core** | `loadUI()`, `loadUIString()`, `create()`, `show()`, `hide()`, `run()`, `quit()`, `window()`, `definition()` |
+| **Properties** | `set()`, `setBool()`, `setString()`, `setNumber()`, `setColor()`, `setEnum()`, `setImage()`, `getProperty()` |
 | **Callbacks** | `setCallback()`, `invoke()`, `callbackArg()`, `callbackArgsCount()` |
 | **Timers** | `timerStart()`, `timerStartOnce()`, `timerStop()`, `timerRestart()`, `timerRunning()`, `timerSetInterval()` |
 | **Models** | `modelCreate()`, `modelPush()`, `modelInsert()`, `modelSet()`, `modelGet()`, `modelRemove()`, `modelClear()`, `modelCount()`, `modelDestroy()` |
