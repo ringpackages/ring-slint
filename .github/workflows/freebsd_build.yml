@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         include:
-        - release: "15.0"
+        - release: "15.1"
           arch: amd64
           vm_arch: amd64
         # - release: "15.0"
