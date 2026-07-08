@@ -1,4 +1,4 @@
-name: Alpine Build
+name: Musl Build
 
 on:
   workflow_call:
@@ -14,7 +14,9 @@ jobs:
       matrix:
         include:
         - arch: amd64
+          image-tag: void-musl
         - arch: arm64
+          image-tag: void-musl
 
     steps:
     - name: Checkout repository
@@ -35,19 +37,22 @@ jobs:
         path: |
           cargo-cache
           src/rust_src/target
-        key: alpine-${{ matrix.arch }}-cargo-${{ hashFiles('src/rust_src/Cargo.lock') }}
+        key: void-musl-${{ matrix.arch }}-cargo-${{ hashFiles('src/rust_src/Cargo.lock') }}
         restore-keys: |
-          alpine-${{ matrix.arch }}-cargo-
+          void-musl-${{ matrix.arch }}-cargo-
 
-    - name: Build in Alpine container
+    - name: Build in Void Linux musl container
       run: |
         mkdir -p cargo-cache
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
           -v ${{ github.workspace }}/cargo-cache:/root/.cargo \
           -w /workspace \
-          alpine:3.23 sh -c '
-            apk add --no-cache cmake make gcc g++ musl-dev fontconfig-dev rust cargo curl python3 clang clang-dev ninja git gn linux-headers
+          ghcr.io/void-linux/${{ matrix.image-tag }} sh -c '
+            xbps-install -Syu
+            xbps-install -y base-devel pkgconf cmake make fontconfig-devel freetype-devel libpng-devel expat-devel ninja python3 git gn curl clang
+            curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            . "$HOME/.cargo/env"
             cd ring/language
             cmake . -DCMAKE_BUILD_TYPE=Release -GNinja
             ninja install
@@ -55,6 +60,7 @@ jobs:
             export RING=/workspace/ring
             export SKIA_GN_COMMAND=gn
             export SKIA_NINJA_COMMAND=ninja
+            export RUSTFLAGS="-C target-feature=-crt-static"
             cd src/rust_src
             cargo build --release
             chmod -R a+r /root/.cargo /workspace/src/rust_src/target
